@@ -200,7 +200,7 @@ graph TB
 
 For a typical Node.js project (Architecture depth, with WHY):
 
-```markdown
+````markdown
 ## Architecture Overview
 
 **Tech Stack:** TypeScript, React 18, Express 4, PostgreSQL
@@ -225,4 +225,4 @@ graph TD
 - `api/server.ts` — HTTP API server
 - `web/src/index.tsx` — React frontend entry
 - `cli/index.ts` — CLI tool entry
-```
+````
