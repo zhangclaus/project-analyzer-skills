@@ -1,4 +1,4 @@
-# Project X-Ray
+# Project X-Ray Skills
 
 An [Agent Skills](https://agentskills.io/specification) skill that generates visual documentation for any codebase — architecture diagrams, data flow diagrams, functional flow charts, and user interaction patterns.
 
@@ -18,7 +18,7 @@ Give it a local path or a GitHub URL, and it will analyze the project and produc
 ### Option 1: Clone to your skills directory
 
 ```bash
-git clone git@github.com:zhangclaus/project-xray.git ~/.agents/skills/project-xray
+git clone git@github.com:zhangclaus/project-xray-skills.git ~/.agents/skills/project-xray-skills
 ```
 
 ### Option 2: Add to Claude Code settings
@@ -27,13 +27,13 @@ In your `settings.json`:
 
 ```json
 {
-  "skills": ["/path/to/project-xray"]
+  "skills": ["/path/to/project-xray-skills"]
 }
 ```
 
 ### Option 3: Use with any Agent Skills compatible tool
 
-Place the `project-xray` directory in any location discovered by your agent:
+Place the `project-xray-skills` directory in any location discovered by your agent:
 - `~/.pi/agent/skills/`
 - `~/.agents/skills/`
 - `.pi/skills/` (project-local)
@@ -55,7 +55,7 @@ Just ask naturally:
 Or invoke directly:
 
 ```
-/project-xray
+/project-xray-skills
 ```
 
 ## How It Works
@@ -174,7 +174,7 @@ The skill works with any language by analyzing directory structure and imports. 
 ## Project Structure
 
 ```
-project-xray/
+project-xray-skills/
 ├── SKILL.md                        # Main skill orchestrator
 ├── references/
 │   ├── architecture.md             # Architecture analysis guide

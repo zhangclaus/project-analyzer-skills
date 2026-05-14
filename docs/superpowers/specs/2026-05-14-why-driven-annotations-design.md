@@ -4,7 +4,7 @@
 
 ## Goal
 
-Upgrade project-xray diagrams from "showing structure" to "explaining design decisions" by adding WHY annotations to architecture and functional flow diagrams.
+Upgrade project-xray-skills diagrams from "showing structure" to "explaining design decisions" by adding WHY annotations to architecture and functional flow diagrams.
 
 ## Decisions
 

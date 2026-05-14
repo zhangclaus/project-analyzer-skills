@@ -1,5 +1,5 @@
 ---
-name: project-xray
+name: project-xray-skills
 description: >
   Use when users want to understand, analyze, or document an open source project's architecture,
   data flow, functional flow, or user interaction patterns. Triggered by requests like
@@ -24,7 +24,7 @@ The user provides either a local path or a GitHub URL.
 **GitHub URL:**
 1. Extract owner/repo from the URL
 2. Use `Bash` with `gh repo view <owner/repo>` to verify accessibility
-3. Use `Bash` with `gh repo clone <owner/repo> /tmp/project-xray-<repo>` to clone
+3. Use `Bash` with `gh repo clone <owner/repo> /tmp/project-xray-skills-<repo>` to clone
 4. If inaccessible, ask the user to check the URL or network
 
 ## Quick Scan
