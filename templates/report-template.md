@@ -23,6 +23,8 @@
 
 <Include module dependency diagram and tech stack overview here>
 
+> **Note:** At Architecture or Deep depth, architecture diagrams include WHY annotations — each module node has a one-line explanation of why it exists, and each dependency edge explains why the dependency is needed. At Overview depth, diagrams show structure only.
+
 ## Data Flow
 
 <Include data flow diagrams and data model here>
@@ -30,6 +32,8 @@
 ## Functional Flow
 
 <Include core business logic flowcharts and state machines here>
+
+> **Note:** At Architecture or Deep depth, functional flow diagrams include WHY annotations — each function node explains why it's needed in the flow, and each call edge explains the reason for the call. At Overview depth, diagrams show structure only.
 
 ## User Interaction
 
