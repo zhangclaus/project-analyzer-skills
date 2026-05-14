@@ -49,9 +49,29 @@ Identify functions that:
 - Modify global state
 - Read/write files
 
+### Step 6: Infer Function WHY (Architecture + Deep only)
+
+For each function identified in the call chain, infer **why it exists** in the flow.
+
+**For each function node:**
+1. `Read` the function body
+2. Identify what problem it solves (not what operations it performs)
+3. Synthesize a one-line WHY: "This function exists because [caller] needs [capability]"
+
+**For each call edge A → B:**
+1. Identify what A needs from B (data transformation? validation? persistence?)
+2. Summarize the reason in one phrase
+
+**Quality constraints:**
+- Must answer "why this step is needed", not "what this step does"
+- Good node WHY: "入口函数，统一错误处理"
+- Bad node WHY: "处理请求" (this is WHAT)
+- Good edge WHY: "校验通过后进入业务逻辑"
+- Bad edge WHY: "调用validateInput" (no reasoning)
+
 ## Diagram Templates
 
-### Function Call Chain
+### Function Call Chain (Overview — no WHY)
 
 ```mermaid
 flowchart TD
@@ -62,6 +82,26 @@ flowchart TD
     C --> F[saveToDB]
     D --> G[getPrice]
     E --> H[lookupCoupon]
+```
+
+### Function Call Chain (Architecture/Deep — with WHY)
+
+```mermaid
+flowchart TD
+    A["handleRequest\n入口函数，统一错误处理"]
+    B["validateInput\n防御性校验，防止脏数据进入"]
+    C["processOrder\n核心业务逻辑编排"]
+    D["calculateTotal\n价格计算，含折扣和税费"]
+    E["applyDiscounts\n折扣规则引擎，支持促销"]
+    F["saveToDB\n数据持久化，事务保证"]
+
+    A -->|"参数解构"| B
+    A -->|"校验通过后"| C
+    C -->|"金额汇总"| D
+    C -->|"优惠计算"| E
+    C -->|"落盘存储"| F
+    D -->|"获取基础价格"| G[getPrice]
+    E -->|"查询优惠券"| H[lookupCoupon]
 ```
 
 ### Control Flow (Detailed)
@@ -119,33 +159,37 @@ sequenceDiagram
 
 ## Depth Configuration
 
-| Depth | What to Include |
-|-------|----------------|
-| Overview | Top-level function names and their purpose |
-| Architecture | Call chains, key branching logic, side effects |
-| Deep | Full control flow, every branch, error paths, state machines |
+| Depth | What to Include | WHY Annotations |
+|-------|----------------|-----------------|
+| Overview | Top-level function names and their purpose | No |
+| Architecture | Call chains, key branching logic, side effects | Yes — node ≤15 chars, edge ≤20 chars |
+| Deep | Full control flow, every branch, error paths, state machines | Yes — node ≤25 chars, edge ≤30 chars |
 
 ## Example Output
 
-```markdown
-## Functional Flow: User Registration
+### Functional Flow: User Registration (Architecture depth, with WHY)
 
 ```mermaid
 flowchart TD
-    A[POST /register] --> B[validateEmail]
-    A --> C[validatePassword]
-    B --> D{email valid?}
-    C --> E{password strong?}
-    D -->|No| F[400 Bad Request]
-    E -->|No| F
-    D -->|Yes| G[checkDuplicate]
-    E -->|Yes| G
-    G --> H{exists?}
-    H -->|Yes| I[409 Conflict]
-    H -->|No| J[hashPassword]
-    J --> K[createUser]
-    K --> L[sendWelcomeEmail]
-    K --> M[201 Created]
+    A["POST /register\n入口，接收注册请求"]
+    B["validateEmail\n格式校验，拒绝无效邮箱"]
+    C["validatePassword\n强度校验，防止弱密码"]
+    G["checkDuplicate\n查重，避免重复注册"]
+    J["hashPassword\nbcrypt哈希，安全存储"]
+    K["createUser\n创建账号，写入数据库"]
+    L["sendWelcomeEmail\n发送欢迎邮件，提升体验"]
+
+    A -->|"提取邮箱"| B
+    A -->|"提取密码"| C
+    B -->|"邮箱合法"| G
+    C -->|"密码合规"| G
+    G -->|"无重复"| J
+    J --> K
+    K -->|"注册成功"| L
+    K -->|"返回201"| M[201 Created]
+    B -->|"格式错误"| F[400 Bad Request]
+    C -->|"强度不足"| F
+    G -->|"已存在"| I[409 Conflict]
 ```
 
 ### State: User Account
