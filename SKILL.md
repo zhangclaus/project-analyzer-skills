@@ -1,12 +1,15 @@
 ---
 name: project-xray-skills
-description: >
-  Use when users want to understand, analyze, or document an open source project's architecture,
-  data flow, functional flow, or user interaction patterns. Triggered by requests like
-  "分析这个项目", "帮我理解这个代码库", "generate architecture diagram",
-  "explain how this project works", "项目详解", "codebase overview",
-  "project deep dive", "how does this repo work", or when users provide a GitHub URL
-  or local path and ask about its structure or internals.
+license: MIT
+github: https://github.com/zhangclaus/project-xray-skills
+description:
+  为任何代码库生成可视化文档 — 架构图、数据流图、功能流程图、用户交互模式。
+  触发场景：用户想理解、分析或文档化一个项目，如 "分析这个项目"、"帮我理解这个代码库"、
+  "generate architecture diagram"、"explain how this project works"、"项目详解"、
+  "codebase overview"、"project deep dive"，或用户提供 GitHub URL / 本地路径并询问其结构。
+metadata:
+  author: zhangclaus
+  version: "1.0.0"
 ---
 
 # Project Analysis

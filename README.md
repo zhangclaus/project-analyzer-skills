@@ -15,28 +15,26 @@ Give it a local path or a GitHub URL, and it will analyze the project and produc
 
 ## Installation
 
-### Option 1: Clone to your skills directory
+### Claude Code
+
+```bash
+git clone git@github.com:zhangclaus/project-xray-skills.git ~/.claude/skills/project-xray-skills
+```
+
+That's it. Claude Code auto-discovers skills in `~/.claude/skills/`. No config needed.
+
+### Cursor / Windsurf / Copilot CLI
 
 ```bash
 git clone git@github.com:zhangclaus/project-xray-skills.git ~/.agents/skills/project-xray-skills
 ```
 
-### Option 2: Add to Claude Code settings
-
-In your `settings.json`:
-
-```json
-{
-  "skills": ["/path/to/project-xray-skills"]
-}
-```
-
-### Option 3: Use with any Agent Skills compatible tool
+### Any Agent Skills compatible tool
 
 Place the `project-xray-skills` directory in any location discovered by your agent:
-- `~/.pi/agent/skills/`
-- `~/.agents/skills/`
-- `.pi/skills/` (project-local)
+- `~/.claude/skills/` (Claude Code)
+- `~/.agents/skills/` (Cursor, Windsurf, Copilot CLI)
+- `.claude/skills/` (project-local)
 - `.agents/skills/` (project-local)
 
 ## Usage
