@@ -97,6 +97,31 @@ Process diagram types in this order (if selected):
 3. Functional Flow
 4. User Interaction
 
+## WHY Annotations
+
+For **Architecture** and **Functional Flow** diagrams at **Architecture** or **Deep** depth, add WHY annotations to explain design decisions.
+
+**When to enable:**
+- Diagram type = Architecture or Functional Flow
+- Depth = Architecture or Deep (Overview stays lightweight, no WHY)
+
+**Format:**
+- Modules ≤ 20: Inline labels — `ModuleName["name\nWHY statement"]`
+- Modules > 20: Subgraph grouping — group modules by layer, subgraph title includes WHY
+
+**Node WHY:** Each module node gets a one-line explanation of why it exists (not what it does).
+- Architecture depth: ≤15 characters
+- Deep depth: ≤25 characters
+
+**Edge WHY:** Each dependency edge gets a one-line explanation of why the dependency exists.
+- Architecture depth: ≤20 characters
+- Deep depth: ≤30 characters
+
+**Quality rules:**
+- WHY must answer "why", not describe "what"
+- Good: "封装业务规则，不依赖框架"
+- Bad: "包含核心业务逻辑"
+
 ## Output Generation
 
 After all diagrams are confirmed, generate the report.
