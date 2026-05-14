@@ -4,6 +4,8 @@ An [Agent Skills](https://agentskills.io/specification) skill that generates vis
 
 Give it a local path or a GitHub URL, and it will analyze the project and produce structured Markdown reports with embedded Mermaid diagrams.
 
+[![skills.sh](https://skills.sh/b/zhangclaus/project-xray-skills)](https://skills.sh/zhangclaus/project-xray-skills)
+
 ## Features
 
 - **4 diagram types** — Architecture, Data Flow, Functional Flow, User Interaction
@@ -15,27 +17,17 @@ Give it a local path or a GitHub URL, and it will analyze the project and produc
 
 ## Installation
 
-### Claude Code
-
 ```bash
-git clone git@github.com:zhangclaus/project-xray-skills.git ~/.claude/skills/project-xray-skills
+npx skills add zhangclaus/project-xray-skills
 ```
 
-That's it. Claude Code auto-discovers skills in `~/.claude/skills/`. No config needed.
+Works with Claude Code, Cursor, Windsurf, Copilot CLI, and other [Agent Skills compatible tools](https://agentskills.io/clients).
 
-### Cursor / Windsurf / Copilot CLI
+For global installation (available in all projects):
 
 ```bash
-git clone git@github.com:zhangclaus/project-xray-skills.git ~/.agents/skills/project-xray-skills
+npx skills add zhangclaus/project-xray-skills -g
 ```
-
-### Any Agent Skills compatible tool
-
-Place the `project-xray-skills` directory in any location discovered by your agent:
-- `~/.claude/skills/` (Claude Code)
-- `~/.agents/skills/` (Cursor, Windsurf, Copilot CLI)
-- `.claude/skills/` (project-local)
-- `.agents/skills/` (project-local)
 
 ## Usage
 
