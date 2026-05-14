@@ -4,7 +4,6 @@ An [Agent Skills](https://agentskills.io/specification) skill that generates vis
 
 Give it a local path or a GitHub URL, and it will analyze the project and produce structured Markdown reports with embedded Mermaid diagrams.
 
-[![skills.sh](https://skills.sh/b/zhangclaus/project-xray-skills)](https://skills.sh/zhangclaus/project-xray-skills)
 
 ## Features
 
