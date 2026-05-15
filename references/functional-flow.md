@@ -69,137 +69,82 @@ For each function identified in the call chain, infer **why it exists** in the f
 - Good edge WHY: "校验通过后进入业务逻辑"
 - Bad edge WHY: "调用validateInput" (no reasoning)
 
-## Diagram Templates
+## Output: Interactive HTML
 
-### Function Call Chain (Overview — no WHY)
+Functional flow diagrams are output as interactive HTML files using Cytoscape.js.
 
-```mermaid
-flowchart TD
-    A[handleRequest] --> B[validateInput]
-    A --> C[processOrder]
-    C --> D[calculateTotal]
-    C --> E[applyDiscounts]
-    C --> F[saveToDB]
-    D --> G[getPrice]
-    E --> H[lookupCoupon]
+### Core Flows (`functional-flow/core-flows.html`)
+
+Shows the main business logic call chains with WHY annotations.
+
+**Graph data structure:**
+
+```javascript
+{
+  nodes: [
+    // Each function is a node
+    { id: 'func_name', label: 'display_name', layer: 'business', why: 'WHY it exists' },
+    // layer values: 'access' (entry points), 'business' (core logic), 'tool' (utilities), 'data' (persistence), 'infra' (cross-cutting)
+  ],
+  edges: [
+    // Each call relationship is an edge
+    { source: 'caller', target: 'callee', reason: 'WHY the call' },
+  ]
+}
 ```
 
-### Function Call Chain (Architecture/Deep — with WHY)
+**Node fields:**
+- `id` — unique identifier, typically the function name
+- `label` — display name (e.g., `handleRequest`, `validateInput`)
+- `layer` — categorize by function role: `access` (entry/handler), `business` (core logic), `tool` (utility), `data` (persistence), `infra` (logging/events)
+- `why` — one-line WHY annotation (≤15 chars for Architecture, ≤25 for Deep)
 
-```mermaid
-flowchart TD
-    A["handleRequest\n入口函数，统一错误处理"]
-    B["validateInput\n防御性校验，防止脏数据进入"]
-    C["processOrder\n核心业务逻辑编排"]
-    D["calculateTotal\n价格计算，含折扣和税费"]
-    E["applyDiscounts\n折扣规则引擎，支持促销"]
-    F["saveToDB\n数据持久化，事务保证"]
+**Edge fields:**
+- `source` — the calling function
+- `target` — the called function
+- `reason` — one-line WHY (≤20 chars for Architecture, ≤30 for Deep)
 
-    A -->|"参数解构"| B
-    A -->|"校验通过后"| C
-    C -->|"金额汇总"| D
-    C -->|"优惠计算"| E
-    C -->|"落盘存储"| F
-    D -->|"获取基础价格"| G[getPrice]
-    E -->|"查询优惠券"| H[lookupCoupon]
-```
+### Call Chains (`functional-flow/call-chains.html`)
 
-### Control Flow (Detailed)
+Same structure as core flows, but focused on specific call chains from entry points to leaf functions.
 
-```mermaid
-flowchart TD
-    Start([Entry]) --> Check{isValid?}
-    Check -->|Yes| Process[process data]
-    Check -->|No| Error[return error]
-    Process --> Save[save to DB]
-    Save --> Success[return result]
-    Save -->|fail| Retry{retry?}
-    Retry -->|Yes| Save
-    Retry -->|No| Error
-```
+### State Machines (`functional-flow/state-machines.md`)
 
-### State Machine
-
-```mermaid
-stateDiagram-v2
-    [*] --> Created
-    Created --> Processing: start()
-    Processing --> Completed: finish()
-    Processing --> Failed: error()
-    Failed --> Processing: retry()
-    Completed --> [*]
-    Failed --> [*]
-```
-
-### Sequence Diagram
-
-```mermaid
-sequenceDiagram
-    participant C as Client
-    participant H as Handler
-    participant S as Service
-    participant R as Repository
-    participant DB as Database
-
-    C->>H: request
-    H->>H: validate()
-    H->>S: process()
-    S->>R: find(id)
-    R->>DB: SELECT
-    DB-->>R: row
-    R-->>S: entity
-    S->>S: transform()
-    S->>R: save(entity)
-    R->>DB: INSERT
-    DB-->>R: ok
-    R-->>S: saved
-    S-->>H: result
-    H-->>C: response
-```
+Keep as Mermaid markdown — state machines are typically small (5-10 states) and render well in Mermaid.
 
 ## Depth Configuration
 
-| Depth | What to Include | WHY Annotations |
-|-------|----------------|-----------------|
-| Overview | Top-level function names and their purpose | No |
-| Architecture | Call chains, key branching logic, side effects | Yes — node ≤15 chars, edge ≤20 chars |
-| Deep | Full control flow, every branch, error paths, state machines | Yes — node ≤25 chars, edge ≤30 chars |
+| Depth | What to Include | WHY Annotations | Output |
+|-------|----------------|-----------------|--------|
+| Overview | Top-level function names and their purpose | No | Mermaid in README |
+| Architecture | Call chains, key branching logic, side effects | Yes — node ≤15 chars, edge ≤20 chars | Interactive HTML |
+| Deep | Full control flow, every branch, error paths, state machines | Yes — node ≤25 chars, edge ≤30 chars | Interactive HTML |
 
 ## Example Output
 
-### Functional Flow: User Registration (Architecture depth, with WHY)
+For a User Registration flow (Architecture depth), the HTML file contains:
 
-```mermaid
-flowchart TD
-    A["POST /register\n入口，接收注册请求"]
-    B["validateEmail\n格式校验，拒绝无效邮箱"]
-    C["validatePassword\n强度校验，防止弱密码"]
-    G["checkDuplicate\n查重，避免重复注册"]
-    J["hashPassword\nbcrypt哈希，安全存储"]
-    K["createUser\n创建账号，写入数据库"]
-    L["sendWelcomeEmail\n发送欢迎邮件，提升体验"]
-
-    A -->|"提取邮箱"| B
-    A -->|"提取密码"| C
-    B -->|"邮箱合法"| G
-    C -->|"密码合规"| G
-    G -->|"无重复"| J
-    J --> K
-    K -->|"注册成功"| L
-    K -->|"返回201"| M[201 Created]
-    B -->|"格式错误"| F[400 Bad Request]
-    C -->|"强度不足"| F
-    G -->|"已存在"| I[409 Conflict]
+```javascript
+{
+  nodes: [
+    { id: 'register', label: 'POST /register', layer: 'access', why: '入口，接收注册请求' },
+    { id: 'validateEmail', label: 'validateEmail', layer: 'business', why: '格式校验，拒绝无效邮箱' },
+    { id: 'validatePw', label: 'validatePassword', layer: 'business', why: '强度校验，防止弱密码' },
+    { id: 'checkDup', label: 'checkDuplicate', layer: 'business', why: '查重，避免重复注册' },
+    { id: 'hashPw', label: 'hashPassword', layer: 'business', why: 'bcrypt哈希，安全存储' },
+    { id: 'createUser', label: 'createUser', layer: 'data', why: '创建账号，写入数据库' },
+    { id: 'sendEmail', label: 'sendWelcomeEmail', layer: 'infra', why: '发送欢迎邮件，提升体验' },
+  ],
+  edges: [
+    { source: 'register', target: 'validateEmail', reason: '提取邮箱' },
+    { source: 'register', target: 'validatePw', reason: '提取密码' },
+    { source: 'validateEmail', target: 'checkDup', reason: '邮箱合法' },
+    { source: 'validatePw', target: 'checkDup', reason: '密码合规' },
+    { source: 'checkDup', target: 'hashPw', reason: '无重复' },
+    { source: 'hashPw', target: 'createUser', reason: '密码已哈希' },
+    { source: 'createUser', target: 'sendEmail', reason: '注册成功' },
+  ]
+}
 ```
 
-### State: User Account
-```mermaid
-stateDiagram-v2
-    [*] --> Pending: register
-    Pending --> Active: verify email
-    Pending --> Deleted: timeout (24h)
-    Active --> Suspended: admin action
-    Suspended --> Active: admin action
-    Active --> Deleted: user deletes
-    Suspended --> Deleted: admin deletes
-```
+The user opens `functional-flow/core-flows.html` in a browser to interact with the diagram.
