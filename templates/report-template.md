@@ -21,23 +21,31 @@
 
 ## Architecture
 
-<Include module dependency diagram and tech stack overview here>
+> **Interactive HTML** — Open the `.html` files in your browser to explore. Zoom with scroll wheel, drag to pan, click modules to highlight dependencies and see details.
 
-> **Note:** At Architecture or Deep depth, architecture diagrams include WHY annotations — each module node has a one-line explanation of why it exists, and each dependency edge explains why the dependency is needed. At Overview depth, diagrams show structure only.
+| File | Description |
+|------|-------------|
+| [dependency-graph.html](architecture/dependency-graph.html) | Module dependency graph with WHY annotations |
+| [layers.html](architecture/layers.html) | Layered architecture view |
+| [tech-stack.md](architecture/tech-stack.md) | Technology stack details |
 
 ## Data Flow
 
-<Include data flow diagrams and data model here>
+<Include data flow diagrams and data model here (Mermaid markdown)>
 
 ## Functional Flow
 
-<Include core business logic flowcharts and state machines here>
+> **Interactive HTML** — Open the `.html` files in your browser to explore.
 
-> **Note:** At Architecture or Deep depth, functional flow diagrams include WHY annotations — each function node explains why it's needed in the flow, and each call edge explains the reason for the call. At Overview depth, diagrams show structure only.
+| File | Description |
+|------|-------------|
+| [core-flows.html](functional-flow/core-flows.html) | Core business logic call chains |
+| [call-chains.html](functional-flow/call-chains.html) | Function call chain details |
+| [state-machines.md](functional-flow/state-machines.md) | State machines (Mermaid) |
 
 ## User Interaction
 
-<Include user flow diagrams and navigation maps here>
+<Include user flow diagrams and navigation maps here (Mermaid markdown)>
 
 ---
 
@@ -45,5 +53,5 @@
 
 - **Depth:** <overview | architecture | deep>
 - **Types:** <which diagram types were generated>
-- **Format:** <Mermaid | Graphviz | PlantUML>
+- **Format:** Interactive HTML (Architecture, Functional Flow) + Mermaid (Data Flow, User Interaction)
 - **Date:** <YYYY-MM-DD>
