@@ -69,19 +69,15 @@ flowchart TD
 ```
 docs/analysis/<project-name>/
 ├── README.md                           # Overview report with index
-├── libs/                               # Cytoscape.js libraries (local)
-│   ├── cytoscape.min.js
-│   ├── cytoscape-dagre.js
-│   └── dagre.min.js
 ├── architecture/
-│   ├── dependency-graph.html           # Interactive dependency graph
+│   ├── dependency-graph.html           # Interactive dependency graph (self-contained)
 │   ├── layers.html                     # Interactive layered view
 │   └── tech-stack.md                   # Tech stack analysis
 ├── data-flow/
 │   ├── data-flow-diagram.md           # Mermaid
 │   └── data-model.md                  # Mermaid
 ├── functional-flow/
-│   ├── core-flows.html                # Interactive call chains
+│   ├── core-flows.html                # Interactive call chains (self-contained)
 │   ├── call-chains.html               # Interactive function chains
 │   └── state-machines.md             # Mermaid state machines
 └── user-interaction/

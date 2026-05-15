@@ -133,14 +133,15 @@ Architecture and Functional Flow diagrams output as **interactive HTML files** u
 - Right sidebar with module details, WHY annotations, and clickable dependency lists
 - Search/filter by module name or WHY text
 - Color-coded by architectural layer
-- Self-contained — uses local JS libraries in `libs/` directory
+- Self-contained — all JS inlined, no external dependencies, works offline
 
 **HTML generation process:**
-1. Read the template: `Read templates/cytoscape-template.html`
+1. Read the standalone template: `Read templates/cytoscape-standalone.html`
 2. Collect graph data during analysis (nodes with id/label/layer/why, edges with source/target/reason)
-3. Replace `/* GRAPH_DATA_PLACEHOLDER */` in the template with the JSON graph data
-4. Write the HTML file to the output directory
-5. Copy `templates/libs/` to `docs/analysis/<project-name>/libs/` (once per project)
+3. Replace `PROJECT_TITLE` with the project name (two occurrences: `<title>` and toolbar `<h1>`)
+4. Replace `DIAGRAM_TITLE` with the diagram title (one occurrence: `<title>`)
+5. Replace `/* GRAPH_DATA_PLACEHOLDER */` with the JSON graph data
+6. Write the HTML file to the output directory (e.g., `architecture/dependency-graph.html`)
 
 **Graph data format:**
 ```javascript
@@ -164,15 +165,10 @@ Read `templates/report-template.md` for the output structure.
 
 Create files under `docs/analysis/<project-name>/`:
 - `README.md` — overview report with simplified Mermaid diagram and links to interactive HTML files
-- `libs/` — Cytoscape.js libraries (copy from `templates/libs/`)
 - One subdirectory per diagram type with individual diagram files
 
 **For HTML diagram types (Architecture, Functional Flow):**
-1. Read `templates/cytoscape-template.html`
-2. Replace `PROJECT_TITLE` with the project name
-3. Replace `DIAGRAM_TITLE` with the diagram title (e.g., "Module Dependencies")
-4. Replace `/* GRAPH_DATA_PLACEHOLDER */` with the collected graph data as JSON
-5. Write the result to the output path (e.g., `architecture/dependency-graph.html`)
+Follow the HTML generation process in the Output Format section above — use `templates/cytoscape-standalone.html` as the base.
 
 **For Mermaid diagram types (Data Flow, User Interaction):**
 Write standard markdown files with Mermaid code blocks.
