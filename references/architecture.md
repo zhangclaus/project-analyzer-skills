@@ -91,7 +91,7 @@ Subgraph title format: `subgraph "层名：一句话定位"`
 
 Architecture diagrams are output as interactive HTML files using Cytoscape.js.
 
-### Dependency Graph (`architecture/dependency-graph.html`)
+### Architecture Explorer (`architecture/architecture-explorer.html`)
 
 The main architecture output. Shows all module dependencies with WHY annotations.
 
@@ -101,7 +101,7 @@ The main architecture output. Shows all module dependencies with WHY annotations
 {
   nodes: [
     // Each module is a node
-    { id: 'module_dir', label: 'display_name', layer: 'business', why: 'WHY it exists' },
+    { id: 'module_dir', label: 'display_name', layer: 'business', path: 'src/module/', why: 'WHY it exists' },
     // ...
   ],
   edges: [
@@ -116,6 +116,7 @@ The main architecture output. Shows all module dependencies with WHY annotations
 - `id` — unique identifier, typically the module directory name (e.g., `crew`, `agent`, `memory`)
 - `label` — display name shown on the graph (e.g., `crew.py`, `agent/core.py`, `memory/`)
 - `layer` — architectural layer: `access`, `business`, `tool`, `data`, `infra`
+- `path` — file path relative to project root (e.g., `src/agent_crucible/crew/`)
 - `why` — one-line WHY annotation (≤15 chars for Architecture depth, ≤25 for Deep)
 
 **Edge fields:**
@@ -132,10 +133,6 @@ The main architecture output. Shows all module dependencies with WHY annotations
 | 工具层 | `tool` | Pure functions or type exports, no business logic |
 | 数据层 | `data` | Imports ORM/redis/fs, exports CRUD operations |
 | 基础设施层 | `infra` | Cross-cutting: events, logging, security, config |
-
-### Layers View (`architecture/layers.html`)
-
-Same data as dependency graph, but grouped by layer. Use the same graph data — the HTML template handles layout.
 
 ### Tech Stack (`architecture/tech-stack.md`)
 
