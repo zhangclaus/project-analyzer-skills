@@ -62,21 +62,20 @@ Ask the user (one question at a time):
 - Functional flow diagrams
 - User interaction flows
 
-**Question 3: Diagram syntax** (if user has a preference)
-- Mermaid (default, best GitHub compatibility)
-- Graphviz (dot syntax)
-- PlantUML
+**Question 3: Output format** (if user has a preference)
+- Interactive HTML (default — opens in browser, zoom/pan/click)
+- Mermaid markdown (GitHub-compatible, static)
 
 ## Analysis Dispatch
 
 Based on the user's selections, read the relevant reference file(s):
 
-| Diagram Type | Reference File |
-|---|---|
-| Architecture | `references/architecture.md` |
-| Data Flow | `references/data-flow.md` |
-| Functional Flow | `references/functional-flow.md` |
-| User Interaction | `references/user-interaction.md` |
+| Diagram Type | Reference File | Output Format |
+|---|---|---|
+| Architecture | `references/architecture.md` | Interactive HTML |
+| Data Flow | `references/data-flow.md` | Mermaid markdown |
+| Functional Flow | `references/functional-flow.md` | Interactive HTML |
+| User Interaction | `references/user-interaction.md` | Mermaid markdown |
 
 Read only the selected types. Each reference file contains:
 - Detailed analysis steps
@@ -125,6 +124,38 @@ For **Architecture** and **Functional Flow** diagrams at **Architecture** or **D
 - Good: "封装业务规则，不依赖框架"
 - Bad: "包含核心业务逻辑"
 
+## Output Format
+
+Architecture and Functional Flow diagrams output as **interactive HTML files** using Cytoscape.js. Data Flow and User Interaction diagrams output as **Mermaid markdown**.
+
+**HTML output features:**
+- Zoom (scroll wheel), pan (drag), click-to-highlight dependency chains
+- Right sidebar with module details, WHY annotations, and clickable dependency lists
+- Search/filter by module name or WHY text
+- Color-coded by architectural layer
+- Self-contained — uses local JS libraries in `libs/` directory
+
+**HTML generation process:**
+1. Read the template: `Read templates/cytoscape-template.html`
+2. Collect graph data during analysis (nodes with id/label/layer/why, edges with source/target/reason)
+3. Replace `/* GRAPH_DATA_PLACEHOLDER */` in the template with the JSON graph data
+4. Write the HTML file to the output directory
+5. Copy `templates/libs/` to `docs/analysis/<project-name>/libs/` (once per project)
+
+**Graph data format:**
+```javascript
+{
+  nodes: [
+    { id: 'module_name', label: 'display_name', layer: 'business', why: 'WHY annotation' }
+  ],
+  edges: [
+    { source: 'a', target: 'b', reason: 'edge WHY annotation' }
+  ]
+}
+```
+
+**Layer values:** `access` (接入层), `business` (业务层), `tool` (工具层), `data` (数据层), `infra` (基础设施层)
+
 ## Output Generation
 
 After all diagrams are confirmed, generate the report.
@@ -132,10 +163,19 @@ After all diagrams are confirmed, generate the report.
 Read `templates/report-template.md` for the output structure.
 
 Create files under `docs/analysis/<project-name>/`:
-- `README.md` — overview report with links to all diagrams
+- `README.md` — overview report with simplified Mermaid diagram and links to interactive HTML files
+- `libs/` — Cytoscape.js libraries (copy from `templates/libs/`)
 - One subdirectory per diagram type with individual diagram files
 
-Use this naming: `docs/analysis/<project-name>/`
+**For HTML diagram types (Architecture, Functional Flow):**
+1. Read `templates/cytoscape-template.html`
+2. Replace `PROJECT_TITLE` with the project name
+3. Replace `DIAGRAM_TITLE` with the diagram title (e.g., "Module Dependencies")
+4. Replace `/* GRAPH_DATA_PLACEHOLDER */` with the collected graph data as JSON
+5. Write the result to the output path (e.g., `architecture/dependency-graph.html`)
+
+**For Mermaid diagram types (Data Flow, User Interaction):**
+Write standard markdown files with Mermaid code blocks.
 
 ## Error Handling
 
@@ -151,6 +191,7 @@ Use this naming: `docs/analysis/<project-name>/`
 
 After generating the report:
 1. Show the user the README.md overview
-2. Ask: "Does this look right? Want to adjust anything?"
-3. If changes requested, update the relevant diagram(s) and regenerate
-4. Offer to add more diagram types or go deeper on any section
+2. Tell the user to open the HTML files in their browser to explore interactively
+3. Ask: "Does this look right? Want to adjust anything?"
+4. If changes requested, update the relevant diagram(s) and regenerate
+5. Offer to add more diagram types or go deeper on any section
