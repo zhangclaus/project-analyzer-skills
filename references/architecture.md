@@ -87,142 +87,88 @@ Detection: `Grep` each module's imports for framework/service keywords, check ex
 
 Subgraph title format: `subgraph "层名：一句话定位"`
 
-## Diagram Templates
+## Output: Interactive HTML
 
-### Module Dependency Graph (Overview — no WHY)
+Architecture diagrams are output as interactive HTML files using Cytoscape.js.
 
-```mermaid
-graph TD
-    A[Module A] --> B[Module B]
-    A --> C[Module C]
-    B --> D[Module D]
-    C --> D
+### Dependency Graph (`architecture/dependency-graph.html`)
 
-    style A fill:#f9f,stroke:#333
-    style D fill:#bbf,stroke:#333
+The main architecture output. Shows all module dependencies with WHY annotations.
+
+**Graph data structure:**
+
+```javascript
+{
+  nodes: [
+    // Each module is a node
+    { id: 'module_dir', label: 'display_name', layer: 'business', why: 'WHY it exists' },
+    // ...
+  ],
+  edges: [
+    // Each dependency is an edge
+    { source: 'caller', target: 'dependency', reason: 'WHY the dependency' },
+    // ...
+  ]
+}
 ```
 
-### Module Dependency Graph (Architecture/Deep — with WHY, ≤20 modules)
+**Node fields:**
+- `id` — unique identifier, typically the module directory name (e.g., `crew`, `agent`, `memory`)
+- `label` — display name shown on the graph (e.g., `crew.py`, `agent/core.py`, `memory/`)
+- `layer` — architectural layer: `access`, `business`, `tool`, `data`, `infra`
+- `why` — one-line WHY annotation (≤15 chars for Architecture depth, ≤25 for Deep)
 
-```mermaid
-graph TD
-    API["api/\n处理HTTP请求，隔离协议细节"]
-    Core["core/\n封装业务规则，不依赖框架"]
-    DB[("db/\n统一数据访问，隔离存储细节")]
-    Utils["utils/\n通用工具，避免重复实现"]
+**Edge fields:**
+- `source` — the module that depends on the target
+- `target` — the module being depended on
+- `reason` — one-line WHY annotation (≤20 chars for Architecture, ≤30 for Deep)
 
-    API -->|"路由分发，保持handler轻量"| Core
-    Core -->|"数据持久化，统一访问模式"| DB
-    Core -->|"日期处理、字符串操作等"| Utils
-```
+**Layer assignment rules:**
 
-### Module Dependency Graph (Architecture/Deep — with WHY, >20 modules, subgraph)
+| Layer | Value | Detection |
+|-------|-------|-----------|
+| 接入层 | `access` | Imports express/fastify/cobra, exports route handlers |
+| 业务层 | `business` | No framework imports, exports business functions |
+| 工具层 | `tool` | Pure functions or type exports, no business logic |
+| 数据层 | `data` | Imports ORM/redis/fs, exports CRUD operations |
+| 基础设施层 | `infra` | Cross-cutting: events, logging, security, config |
 
-```mermaid
-graph TD
-    subgraph "接入层：统一外部协议"
-        HTTP[http/]
-        WS[ws/]
-        CLI[cli/]
-    end
-    subgraph "业务层：核心规则独立于框架"
-        Auth[auth/]
-        Order[order/]
-        User[user/]
-    end
-    subgraph "数据层：统一存储访问"
-        Repo[repo/]
-        Cache[cache/]
-    end
+### Layers View (`architecture/layers.html`)
 
-    HTTP -->|"请求路由"| Auth
-    HTTP -->|"订单操作"| Order
-    Auth -->|"用户验证"| User
-    Order -->|"持久化"| Repo
-    Order -->|"缓存热门商品"| Cache
-```
+Same data as dependency graph, but grouped by layer. Use the same graph data — the HTML template handles layout.
 
-### Tech Stack Overview
+### Tech Stack (`architecture/tech-stack.md`)
 
-```mermaid
-graph LR
-    subgraph Frontend
-        React[React 18]
-        TS[TypeScript 5]
-    end
-    subgraph Backend
-        Node[Node.js 20]
-        Express[Express 4]
-    end
-    subgraph Database
-        PG[PostgreSQL]
-        Redis[Redis]
-    end
-
-    React --> Express
-    Express --> PG
-    Express --> Redis
-```
-
-### Component Architecture (Deep)
-
-```mermaid
-graph TB
-    subgraph Presentation Layer
-        Pages[Pages]
-        Components[Components]
-    end
-    subgraph Business Logic
-        Services[Services]
-        Handlers[Handlers]
-    end
-    subgraph Data Layer
-        Repos[Repositories]
-        Models[Models]
-    end
-
-    Pages --> Components
-    Components --> Services
-    Services --> Handlers
-    Handlers --> Repos
-    Repos --> Models
-```
+Standard markdown table listing technologies. No HTML needed.
 
 ## Depth Configuration
 
-| Depth | What to Include | WHY Annotations |
-|-------|----------------|-----------------|
-| Overview | Top-level modules only, tech stack, entry points | No |
-| Architecture | Module dependencies, API surface, data models | Yes — node ≤15 chars, edge ≤20 chars |
-| Deep | Sub-module structure, key classes, interface contracts | Yes — node ≤25 chars, edge ≤30 chars |
+| Depth | What to Include | WHY Annotations | Output |
+|-------|----------------|-----------------|--------|
+| Overview | Top-level modules only, tech stack, entry points | No | Mermaid in README |
+| Architecture | Module dependencies, API surface, data models | Yes — node ≤15 chars, edge ≤20 chars | Interactive HTML |
+| Deep | Sub-module structure, key classes, interface contracts | Yes — node ≤25 chars, edge ≤30 chars | Interactive HTML |
 
 ## Example Output
 
-For a typical Node.js project (Architecture depth, with WHY):
+For a typical Node.js project (Architecture depth), the HTML file contains:
 
-````markdown
-## Architecture Overview
-
-**Tech Stack:** TypeScript, React 18, Express 4, PostgreSQL
-
-### Module Structure
-
-```mermaid
-graph TD
-    API["api/\nHTTP接入层，协议与业务解耦"]
-    Web["web/\n前端UI，用户交互入口"]
-    Core["core/\n业务规则，不依赖框架"]
-    DB[("db/\n数据持久化，统一访问")]
-    CLI["cli/\n命令行工具，自动化入口"]
-
-    API -->|"请求路由与校验"| Core
-    Web -->|"API调用"| API
-    Core -->|"数据读写"| DB
-    CLI -->|"复用业务逻辑"| Core
+```javascript
+{
+  nodes: [
+    { id: 'api', label: 'api/', layer: 'access', why: 'HTTP接入层，协议与业务解耦' },
+    { id: 'web', label: 'web/', layer: 'access', why: '前端UI，用户交互入口' },
+    { id: 'core', label: 'core/', layer: 'business', why: '业务规则，不依赖框架' },
+    { id: 'db', label: 'db/', layer: 'data', why: '数据持久化，统一访问' },
+    { id: 'cli', label: 'cli/', layer: 'access', why: '命令行工具，自动化入口' },
+  ],
+  edges: [
+    { source: 'api', target: 'core', reason: '请求路由与校验' },
+    { source: 'web', target: 'api', reason: 'API调用' },
+    { source: 'core', target: 'db', reason: '数据读写' },
+    { source: 'cli', target: 'core', reason: '复用业务逻辑' },
+  ]
+}
 ```
 
-### Key Entry Points
-- `api/server.ts` — HTTP API server
-- `web/src/index.tsx` — React frontend entry
-- `cli/index.ts` — CLI tool entry
-````
+The user opens `architecture/dependency-graph.html` in a browser to interact with the diagram.
