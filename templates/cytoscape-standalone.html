@@ -11997,8 +11997,10 @@ module.exports = __WEBPACK_EXTERNAL_MODULE__4__;
   </div>
 
   <script>
-    // Register dagre layout
-    cytoscape('layout', 'dagre', dagre);
+    // cytoscape-dagre auto-registers via UMD; ensure it's registered
+    if (typeof cytoscapeDagre === 'function') {
+      cytoscapeDagre(cytoscape);
+    }
 
     // Layer colors
     const LAYER_COLORS = {
