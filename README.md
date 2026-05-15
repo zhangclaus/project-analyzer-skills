@@ -7,7 +7,7 @@ Give it a local path or a GitHub URL, and it will analyze the project and produc
 
 ## Features
 
-- **Interactive HTML diagrams** — Architecture & Functional Flow with zoom, pan, click-to-explore
+- **Interactive HTML diagrams** — Architecture Explorer with layered tree, dependency mini-graphs, search, expand/collapse
 - **Mermaid markdown** — Data Flow & User Interaction for GitHub compatibility
 - **3 analysis depths** — Overview, Architecture-level, Deep (function-level)
 - **Multiple input sources** — Local directory or GitHub URL
@@ -70,15 +70,13 @@ flowchart TD
 docs/analysis/<project-name>/
 ├── README.md                           # Overview report with index
 ├── architecture/
-│   ├── dependency-graph.html           # Interactive dependency graph (self-contained)
-│   ├── layers.html                     # Interactive layered view
+│   ├── architecture-explorer.html      # Interactive architecture explorer (self-contained)
 │   └── tech-stack.md                   # Tech stack analysis
 ├── data-flow/
 │   ├── data-flow-diagram.md           # Mermaid
 │   └── data-model.md                  # Mermaid
 ├── functional-flow/
-│   ├── core-flows.html                # Interactive call chains (self-contained)
-│   ├── call-chains.html               # Interactive function chains
+│   ├── functional-explorer.html       # Interactive functional flow explorer (self-contained)
 │   └── state-machines.md             # Mermaid state machines
 └── user-interaction/
     ├── user-flow.md                   # Mermaid
@@ -89,7 +87,7 @@ docs/analysis/<project-name>/
 
 ### Architecture
 
-Module dependencies, component relationships, tech stack overview. **Output: Interactive HTML** — open in browser for zoom, pan, click-to-highlight.
+Module dependencies, component relationships, tech stack overview. **Output: Interactive HTML (Architecture Explorer)** — layered tree with dependency mini-graphs, search, expand/collapse.
 
 ### Data Flow
 
@@ -105,7 +103,7 @@ flowchart LR
 
 ### Functional Flow
 
-Core business logic, function call chains, state machines. **Output: Interactive HTML** for call chains, **Mermaid** for state machines.
+Core business logic, function call chains, state machines. **Output: Interactive HTML (Architecture Explorer)** for call chains, **Mermaid** for state machines.
 
 ### User Interaction
 

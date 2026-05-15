@@ -21,12 +21,11 @@
 
 ## Architecture
 
-> **Interactive HTML** — Open the `.html` files in your browser to explore. Zoom with scroll wheel, drag to pan, click modules to highlight dependencies and see details.
+> **Interactive HTML** — Open `architecture-explorer.html` in your browser. Click modules to see full dependency chains. Search, expand/collapse layers.
 
 | File | Description |
 |------|-------------|
-| [dependency-graph.html](architecture/dependency-graph.html) | Module dependency graph with WHY annotations |
-| [layers.html](architecture/layers.html) | Layered architecture view |
+| [architecture-explorer.html](architecture/architecture-explorer.html) | Interactive architecture explorer — dependencies, layers, WHY annotations |
 | [tech-stack.md](architecture/tech-stack.md) | Technology stack details |
 
 ## Data Flow
@@ -35,12 +34,11 @@
 
 ## Functional Flow
 
-> **Interactive HTML** — Open the `.html` files in your browser to explore.
+> **Interactive HTML** — Same explorer format as Architecture. Click functions to see call chains.
 
 | File | Description |
 |------|-------------|
-| [core-flows.html](functional-flow/core-flows.html) | Core business logic call chains |
-| [call-chains.html](functional-flow/call-chains.html) | Function call chain details |
+| [functional-explorer.html](functional-flow/functional-explorer.html) | Interactive functional flow explorer |
 | [state-machines.md](functional-flow/state-machines.md) | State machines (Mermaid) |
 
 ## User Interaction
