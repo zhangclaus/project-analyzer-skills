@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>PROJECT_TITLE — DIAGRAM_TITLE</title>
+  <script src="../libs/cytoscape.min.js"></script>
+  <script src="../libs/cytoscape-dagre.js"></script>
+  <script src="../libs/dagre.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d1117; color: #c9d1d9; overflow: hidden; }
+
+    #toolbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: #161b22; border-bottom: 1px solid #30363d;
+      padding: 8px 16px; display: flex; align-items: center; gap: 12px;
+    }
+    #toolbar h1 { font-size: 14px; font-weight: 600; color: #58a6ff; white-space: nowrap; }
+    #search {
+      background: #0d1117; border: 1px solid #30363d; color: #c9d1d9;
+      padding: 6px 12px; border-radius: 6px; font-size: 13px; width: 220px;
+    }
+    #search:focus { outline: none; border-color: #58a6ff; }
+    .toolbar-btn {
+      background: #21262d; border: 1px solid #30363d; color: #c9d1d9;
+      padding: 5px 12px; border-radius: 6px; font-size: 12px; cursor: pointer;
+    }
+    .toolbar-btn:hover { background: #30363d; }
+    .layer-legend { display: flex; gap: 8px; margin-left: auto; }
+    .layer-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    .layer-label { font-size: 11px; color: #8b949e; }
+
+    #cy { position: fixed; top: 44px; left: 0; right: 320px; bottom: 0; }
+
+    #sidebar {
+      position: fixed; top: 44px; right: 0; width: 320px; bottom: 0;
+      background: #161b22; border-left: 1px solid #30363d;
+      padding: 16px; overflow-y: auto;
+    }
+    #sidebar h2 { font-size: 14px; color: #58a6ff; margin-bottom: 12px; }
+    #sidebar .placeholder { color: #484f58; font-size: 13px; text-align: center; margin-top: 40px; }
+    .detail-label { font-size: 11px; color: #8b949e; text-transform: uppercase; margin-top: 12px; margin-bottom: 4px; }
+    .detail-value { font-size: 13px; color: #c9d1d9; line-height: 1.5; }
+    .dep-list { list-style: none; padding: 0; }
+    .dep-list li { font-size: 12px; padding: 3px 0; color: #8b949e; cursor: pointer; }
+    .dep-list li:hover { color: #58a6ff; text-decoration: underline; }
+    .dep-list li::before { content: "\2192 "; color: #484f58; }
+    .dep-list.reverse li::before { content: "\2190 "; }
+    .stats { display: flex; gap: 16px; margin: 12px 0; }
+    .stat { text-align: center; }
+    .stat-num { font-size: 20px; font-weight: 700; color: #58a6ff; }
+    .stat-label { font-size: 10px; color: #484f58; }
+    #tooltip {
+      position: fixed; display: none; background: #1c2128; border: 1px solid #30363d;
+      border-radius: 8px; padding: 10px 14px; font-size: 12px; max-width: 280px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4); z-index: 200; pointer-events: none;
+    }
+    #tooltip .tt-name { font-weight: 600; color: #58a6ff; margin-bottom: 4px; }
+    #tooltip .tt-why { color: #8b949e; line-height: 1.4; }
+  </style>
+</head>
+<body>
+  <div id="toolbar">
+    <h1>PROJECT_TITLE</h1>
+    <input id="search" type="text" placeholder="Search modules...">
+    <button class="toolbar-btn" onclick="fitGraph()">Fit</button>
+    <button class="toolbar-btn" onclick="resetHighlight()">Reset</button>
+    <div class="layer-legend" id="layer-legend"></div>
+  </div>
+
+  <div id="cy"></div>
+
+  <div id="sidebar">
+    <h2>Module Details</h2>
+    <div id="sidebar-content">
+      <div class="placeholder">Click a module to see details</div>
+    </div>
+  </div>
+
+  <div id="tooltip">
+    <div class="tt-name"></div>
+    <div class="tt-why"></div>
+  </div>
+
+  <script>
+    // Register dagre layout
+    cytoscape('layout', 'dagre', dagre);
+
+    // Layer colors
+    const LAYER_COLORS = {
+      access: '#1f6feb',
+      business: '#f0883e',
+      tool: '#a371f7',
+      data: '#3fb950',
+      infra: '#8b949e'
+    };
+
+    const LAYER_NAMES = {
+      access: '接入层',
+      business: '业务层',
+      tool: '工具层',
+      data: '数据层',
+      infra: '基础设施层'
+    };
+
+    // === GRAPH DATA — replaced by the skill ===
+    const graphData = /* GRAPH_DATA_PLACEHOLDER */;
+    // === END GRAPH DATA ===
+
+    // Build legend
+    const usedLayers = [...new Set(graphData.nodes.map(n => n.layer))];
+    const legendEl = document.getElementById('layer-legend');
+    usedLayers.forEach(layer => {
+      const span = document.createElement('span');
+      span.innerHTML = `<span class="layer-dot" style="background:${LAYER_COLORS[layer] || '#8b949e'}"></span> <span class="layer-label">${LAYER_NAMES[layer] || layer}</span>`;
+      legendEl.appendChild(span);
+    });
+
+    // Build Cytoscape elements
+    const elements = [
+      ...graphData.nodes.map(n => ({
+        data: { id: n.id, label: n.label, layer: n.layer || 'infra', why: n.why || '' }
+      })),
+      ...graphData.edges.map((e, i) => ({
+        data: { id: `e${i}`, source: e.source, target: e.target, reason: e.reason || '' }
+      }))
+    ];
+
+    const cy = cytoscape({
+      container: document.getElementById('cy'),
+      elements,
+      style: [
+        {
+          selector: 'node',
+          style: {
+            'label': 'data(label)',
+            'text-valign': 'center',
+            'text-halign': 'center',
+            'color': '#fff',
+            'font-size': '11px',
+            'text-wrap': 'wrap',
+            'text-max-width': '90px',
+            'width': 80,
+            'height': 48,
+            'border-width': 2,
+            'border-color': '#30363d',
+            'shape': 'round-rectangle',
+            'background-color': function(ele) { return LAYER_COLORS[ele.data('layer')] || '#8b949e'; },
+            'text-outline-color': function(ele) { return LAYER_COLORS[ele.data('layer')] || '#8b949e'; },
+            'text-outline-width': 2,
+            'transition-property': 'background-color, border-color, opacity, width, height',
+            'transition-duration': 0.2,
+          }
+        },
+        {
+          selector: 'edge',
+          style: {
+            'width': 1.5,
+            'line-color': '#30363d',
+            'target-arrow-color': '#30363d',
+            'target-arrow-shape': 'triangle',
+            'curve-style': 'bezier',
+            'arrow-scale': 0.8,
+            'transition-property': 'line-color, target-arrow-color, opacity, width',
+            'transition-duration': 0.2,
+          }
+        },
+        {
+          selector: '.highlighted',
+          style: {
+            'border-color': '#f0f6fc',
+            'border-width': 3,
+            'opacity': 1,
+          }
+        },
+        {
+          selector: '.highlighted-edge',
+          style: {
+            'line-color': '#58a6ff',
+            'target-arrow-color': '#58a6ff',
+            'width': 2.5,
+            'opacity': 1,
+          }
+        },
+        {
+          selector: '.faded',
+          style: { 'opacity': 0.15 }
+        },
+        {
+          selector: '.search-match',
+          style: {
+            'border-color': '#f0883e',
+            'border-width': 4,
+            'opacity': 1,
+          }
+        },
+      ],
+      layout: {
+        name: 'dagre',
+        rankDir: 'TB',
+        rankSep: 80,
+        nodeSep: 40,
+        edgeSep: 20,
+        padding: 30,
+      },
+      minZoom: 0.2,
+      maxZoom: 4,
+      wheelSensitivity: 0.3,
+      boxSelectionEnabled: false,
+    });
+
+    // Tooltip
+    const tooltip = document.getElementById('tooltip');
+    const ttName = tooltip.querySelector('.tt-name');
+    const ttWhy = tooltip.querySelector('.tt-why');
+
+    cy.on('mouseover', 'node', function(evt) {
+      const node = evt.target;
+      ttName.textContent = node.data('label');
+      ttWhy.textContent = node.data('why');
+      tooltip.style.display = 'block';
+    });
+    cy.on('mouseout', 'node', function() {
+      tooltip.style.display = 'none';
+    });
+    cy.on('mousemove', function(evt) {
+      tooltip.style.left = (evt.originalEvent.clientX + 12) + 'px';
+      tooltip.style.top = (evt.originalEvent.clientY + 12) + 'px';
+    });
+
+    // Click to highlight
+    cy.on('tap', 'node', function(evt) {
+      const node = evt.target;
+      cy.elements().removeClass('highlighted highlighted-edge faded');
+      cy.elements().addClass('faded');
+      const connected = node.closedNeighborhood();
+      connected.removeClass('faded').addClass('highlighted');
+      connected.edges().addClass('highlighted-edge');
+      updateSidebar(node);
+    });
+
+    cy.on('tap', function(evt) {
+      if (evt.target === cy) resetHighlight();
+    });
+
+    // Sidebar
+    function updateSidebar(node) {
+      const inEdges = node.incomers('edge');
+      const outEdges = node.outgoers('edge');
+
+      let html = `
+        <div class="detail-label">Module</div>
+        <div class="detail-value" style="font-size:16px;font-weight:600;color:#58a6ff">${node.data('label')}</div>
+        <div class="detail-label">Layer</div>
+        <div class="detail-value"><span class="layer-dot" style="background:${LAYER_COLORS[node.data('layer')] || '#8b949e'};vertical-align:middle"></span> ${LAYER_NAMES[node.data('layer')] || node.data('layer')}</div>
+        <div class="detail-label">WHY</div>
+        <div class="detail-value">${node.data('why')}</div>
+        <div class="stats">
+          <div class="stat"><div class="stat-num">${inEdges.length}</div><div class="stat-label">dependents</div></div>
+          <div class="stat"><div class="stat-num">${outEdges.length}</div><div class="stat-label">dependencies</div></div>
+        </div>`;
+
+      if (inEdges.length > 0) {
+        html += `<div class="detail-label">Used by</div><ul class="dep-list reverse">`;
+        inEdges.forEach(e => {
+          const src = e.source();
+          html += `<li onclick="focusNode('${src.id()}')">${src.data('label')} <span style="color:#484f58;font-size:11px">${e.data('reason')}</span></li>`;
+        });
+        html += '</ul>';
+      }
+
+      if (outEdges.length > 0) {
+        html += `<div class="detail-label">Depends on</div><ul class="dep-list">`;
+        outEdges.forEach(e => {
+          const tgt = e.target();
+          html += `<li onclick="focusNode('${tgt.id()}')">${tgt.data('label')} <span style="color:#484f58;font-size:11px">${e.data('reason')}</span></li>`;
+        });
+        html += '</ul>';
+      }
+
+      document.getElementById('sidebar-content').innerHTML = html;
+    }
+
+    function focusNode(id) {
+      const node = cy.getElementById(id);
+      cy.animate({ center: { eles: node }, zoom: 1.5 }, { duration: 300 });
+      setTimeout(() => node.emit('tap'), 350);
+    }
+
+    function resetHighlight() {
+      cy.elements().removeClass('highlighted highlighted-edge faded search-match');
+      document.getElementById('search').value = '';
+      document.getElementById('sidebar-content').innerHTML = '<div class="placeholder">Click a module to see details</div>';
+    }
+
+    function fitGraph() { cy.fit(undefined, 40); }
+
+    // Search
+    document.getElementById('search').addEventListener('input', function(e) {
+      const q = e.target.value.toLowerCase().trim();
+      if (!q) { resetHighlight(); return; }
+      cy.elements().removeClass('highlighted highlighted-edge faded search-match');
+      cy.elements().addClass('faded');
+      const matches = cy.nodes().filter(n =>
+        n.data('label').toLowerCase().includes(q) || n.data('why').toLowerCase().includes(q)
+      );
+      matches.forEach(n => {
+        n.removeClass('faded').addClass('search-match');
+        n.connectedEdges().forEach(e => {
+          e.removeClass('faded').addClass('highlighted-edge');
+          e.connectedNodes().removeClass('faded');
+        });
+      });
+    });
+
+    cy.ready(() => cy.fit(undefined, 40));
+  </script>
+</body>
+</html>
