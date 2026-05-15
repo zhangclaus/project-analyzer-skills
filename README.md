@@ -7,11 +7,11 @@ Give it a local path or a GitHub URL, and it will analyze the project and produc
 
 ## Features
 
-- **4 diagram types** — Architecture, Data Flow, Functional Flow, User Interaction
+- **Interactive HTML diagrams** — Architecture & Functional Flow with zoom, pan, click-to-explore
+- **Mermaid markdown** — Data Flow & User Interaction for GitHub compatibility
 - **3 analysis depths** — Overview, Architecture-level, Deep (function-level)
 - **Multiple input sources** — Local directory or GitHub URL
 - **Interactive workflow** — Step-by-step guidance with confirmation at each stage
-- **Mermaid output** — Renders natively on GitHub, easy to embed anywhere
 - **Configurable** — Choose depth, diagram types, and output format
 
 ## Installation
@@ -68,34 +68,32 @@ flowchart TD
 
 ```
 docs/analysis/<project-name>/
-├── README.md                       # Overview report with index
+├── README.md                           # Overview report with index
+├── libs/                               # Cytoscape.js libraries (local)
+│   ├── cytoscape.min.js
+│   ├── cytoscape-dagre.js
+│   └── dagre.min.js
 ├── architecture/
-│   ├── module-dependency.md        # Module dependency graph
-│   └── tech-stack.md               # Tech stack analysis
+│   ├── dependency-graph.html           # Interactive dependency graph
+│   ├── layers.html                     # Interactive layered view
+│   └── tech-stack.md                   # Tech stack analysis
 ├── data-flow/
-│   ├── data-flow-diagram.md        # Data flow visualization
-│   └── data-model.md               # ER diagram / data model
+│   ├── data-flow-diagram.md           # Mermaid
+│   └── data-model.md                  # Mermaid
 ├── functional-flow/
-│   ├── core-flows.md               # Business logic flowcharts
-│   └── call-chains.md              # Function call chains
+│   ├── core-flows.html                # Interactive call chains
+│   ├── call-chains.html               # Interactive function chains
+│   └── state-machines.md             # Mermaid state machines
 └── user-interaction/
-    ├── user-flow.md                # User operation flows
-    └── page-navigation.md          # Navigation maps
+    ├── user-flow.md                   # Mermaid
+    └── page-navigation.md             # Mermaid
 ```
 
 ## Diagram Types
 
 ### Architecture
 
-Module dependencies, component relationships, tech stack overview.
-
-```mermaid
-graph TD
-    API[api/] --> Core[core/]
-    API --> DB[db/]
-    Web[web/] --> API
-    Core --> DB
-```
+Module dependencies, component relationships, tech stack overview. **Output: Interactive HTML** — open in browser for zoom, pan, click-to-highlight.
 
 ### Data Flow
 
@@ -111,15 +109,7 @@ flowchart LR
 
 ### Functional Flow
 
-Core business logic, function call chains, state machines.
-
-```mermaid
-flowchart TD
-    A[handleRequest] --> B[validateInput]
-    A --> C[processOrder]
-    C --> D[calculateTotal]
-    C --> E[saveToDB]
-```
+Core business logic, function call chains, state machines. **Output: Interactive HTML** for call chains, **Mermaid** for state machines.
 
 ### User Interaction
 
