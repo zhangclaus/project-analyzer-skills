@@ -351,10 +351,12 @@
   GRAPH_DATA.nodes.forEach(n => nodeMap[n.id] = n);
   const downstream = {}; // id -> [ids it depends on]
   const upstream = {};   // id -> [ids that depend on it]
+  const edgeReasonMap = {}; // "source->target" -> reason
   GRAPH_DATA.nodes.forEach(n => { downstream[n.id] = []; upstream[n.id] = []; });
   GRAPH_DATA.edges.forEach(e => {
     if (downstream[e.source]) downstream[e.source].push(e.target);
     if (upstream[e.target]) upstream[e.target].push(e.source);
+    if (e.reason) edgeReasonMap[e.source + '->' + e.target] = e.reason;
   });
 
   // ── Recursive chain collection ──
@@ -367,7 +369,9 @@
       const neighbors = direction === 'down' ? downstream[id] : upstream[id];
       neighbors.forEach(nid => {
         if (nodeMap[nid]) {
-          result.push({ from: id, to: nid, depth: depth });
+          const reasonKey = id + '->' + nid;
+          const reason = edgeReasonMap[reasonKey] || '';
+          result.push({ from: id, to: nid, depth: depth, reason: reason });
           dfs(nid, depth + 1);
         }
       });
@@ -442,6 +446,12 @@
       const x1 = from.x + arrowDir * 42;
       const x2 = to.x - arrowDir * 42;
       svg += `<line x1="${x1}" y1="${from.y}" x2="${x2}" y2="${to.y}" stroke="#30363d" stroke-width="1.5" marker-end="url(#arrow-${direction})"/>`;
+      if (c.reason) {
+        const mx = (x1 + x2) / 2;
+        const my = (from.y + to.y) / 2 - 4;
+        const label = c.reason.length > 28 ? c.reason.substring(0, 27) + '\u2026' : c.reason;
+        svg += `<text x="${mx}" y="${my}" text-anchor="middle" fill="#8b949e" font-size="8">${escHtml(label)}</text>`;
+      }
     });
 
     // Arrow marker
