@@ -17,16 +17,10 @@ Give it a local path or a GitHub URL, and it will analyze the project and produc
 ## Installation
 
 ```bash
-npx skills add zhangclaus/project-xray-skills
+npx skills add zhangclaus/project-xray-skills --agent claude-code -g
 ```
 
 Works with Claude Code, Cursor, Windsurf, Copilot CLI, and other [Agent Skills compatible tools](https://agentskills.io/clients).
-
-For global installation (available in all projects):
-
-```bash
-npx skills add zhangclaus/project-xray-skills -g
-```
 
 ## Usage
 
