@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PROJECT_TITLE — Architecture Explorer</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --sidebar-bg: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --text-dim: #484f58;
+    --hover: #1f2937;
+    --selected: #1c2333;
+    --accent: #58a6ff;
+    --layer-access: #1f6feb;
+    --layer-business: #f0883e;
+    --layer-tool: #a371f7;
+    --layer-data: #3fb950;
+    --layer-infra: #8b949e;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Toolbar */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: var(--sidebar-bg);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .toolbar h1 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .toolbar .subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .toolbar .spacer { flex: 1; }
+  .search-box {
+    position: relative;
+    width: 240px;
+  }
+  .search-box input {
+    width: 100%;
+    padding: 6px 10px 6px 30px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+  }
+  .search-box input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.15);
+  }
+  .search-box::before {
+    content: "\u26B2";
+    position: absolute;
+    left: 9px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-dim);
+    font-size: 13px;
+    pointer-events: none;
+  }
+  .btn {
+    padding: 5px 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-muted);
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn:hover { background: var(--hover); color: var(--text); }
+
+  /* Main layout */
+  .main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* Left panel - tree */
+  .tree-panel {
+    width: 420px;
+    min-width: 300px;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+  .layer-group { border-bottom: 1px solid var(--border); }
+  .layer-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    position: sticky;
+    top: 0;
+    background: var(--sidebar-bg);
+    z-index: 1;
+  }
+  .layer-header:hover { background: var(--hover); }
+  .layer-header .arrow {
+    font-size: 10px;
+    transition: transform 0.15s;
+    color: var(--text-dim);
+    width: 12px;
+    text-align: center;
+  }
+  .layer-header.collapsed .arrow { transform: rotate(-90deg); }
+  .layer-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .layer-count {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--text-dim);
+    font-weight: 400;
+  }
+  .layer-items { padding: 0 0 4px 0; }
+  .layer-header.collapsed + .layer-items { display: none; }
+  .tree-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 14px 7px 34px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text);
+    border-left: 3px solid transparent;
+  }
+  .tree-item:hover { background: var(--hover); }
+  .tree-item.selected {
+    background: var(--selected);
+    border-left-color: var(--accent);
+  }
+  .tree-item .item-label { flex: 1; }
+  .tree-item .item-path {
+    font-size: 11px;
+    color: var(--text-dim);
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .tree-item.hidden { display: none; }
+
+  /* Right panel - detail */
+  .detail-panel {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 32px;
+  }
+  .detail-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+  .detail-header {
+    margin-bottom: 24px;
+  }
+  .detail-header h2 {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .detail-header .layer-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #fff;
+    margin-right: 8px;
+  }
+  .detail-header .file-path {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+  .detail-why {
+    margin: 16px 0;
+    padding: 12px 16px;
+    background: var(--sidebar-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-muted);
+  }
+  .detail-why strong {
+    color: var(--text);
+    display: block;
+    margin-bottom: 4px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .stats-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    flex: 1;
+    padding: 14px 16px;
+    background: var(--sidebar-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    text-align: center;
+  }
+  .stat-card .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .stat-card .stat-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+  }
+  .graph-section {
+    margin-bottom: 28px;
+  }
+  .graph-section h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .graph-section h3 .count {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-weight: 400;
+  }
+  .svg-container {
+    background: var(--sidebar-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .svg-container:empty::after,
+  .svg-container .empty-msg {
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+  .svg-container svg text {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  }
+
+  /* Resize handle */
+  .resize-handle {
+    width: 4px;
+    cursor: col-resize;
+    background: transparent;
+    flex-shrink: 0;
+  }
+  .resize-handle:hover { background: var(--accent); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <h1>PROJECT_TITLE</h1>
+  <span class="subtitle">DIAGRAM_TITLE</span>
+  <div class="spacer"></div>
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Search modules\u2026" />
+  </div>
+  <button class="btn" id="btnExpand">Expand All</button>
+  <button class="btn" id="btnCollapse">Collapse All</button>
+</div>
+
+<div class="main">
+  <div class="tree-panel" id="treePanel"></div>
+  <div class="resize-handle" id="resizeHandle"></div>
+  <div class="detail-panel" id="detailPanel">
+    <div class="detail-empty">Select a module from the tree to view its dependency analysis</div>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ── Graph data (replaced at build time) ──
+  const GRAPH_DATA = /* GRAPH_DATA_PLACEHOLDER */ {nodes:[],edges:[]};
+
+  // ── Layer config ──
+  const LAYERS = [
+    { id: 'access',   name: 'Access Layer',  color: '#1f6feb' },
+    { id: 'business', name: 'Business Layer', color: '#f0883e' },
+    { id: 'tool',     name: 'Tool Layer',     color: '#a371f7' },
+    { id: 'data',     name: 'Data Layer',     color: '#3fb950' },
+    { id: 'infra',    name: 'Infra Layer',    color: '#8b949e' },
+  ];
+  const layerMap = {};
+  LAYERS.forEach(l => layerMap[l.id] = l);
+
+  // ── Build indexes ──
+  const nodeMap = {};
+  GRAPH_DATA.nodes.forEach(n => nodeMap[n.id] = n);
+  const downstream = {}; // id -> [ids it depends on]
+  const upstream = {};   // id -> [ids that depend on it]
+  GRAPH_DATA.nodes.forEach(n => { downstream[n.id] = []; upstream[n.id] = []; });
+  GRAPH_DATA.edges.forEach(e => {
+    if (downstream[e.source]) downstream[e.source].push(e.target);
+    if (upstream[e.target]) upstream[e.target].push(e.source);
+  });
+
+  // ── Recursive chain collection ──
+  function collectChain(startId, direction, maxDepth) {
+    const visited = new Set();
+    const result = [];
+    function dfs(id, depth) {
+      if (depth > maxDepth || visited.has(id)) return;
+      visited.add(id);
+      const neighbors = direction === 'down' ? downstream[id] : upstream[id];
+      neighbors.forEach(nid => {
+        if (nodeMap[nid]) {
+          result.push({ from: id, to: nid, depth: depth });
+          dfs(nid, depth + 1);
+        }
+      });
+    }
+    dfs(startId, 1);
+    return result;
+  }
+
+  // ── SVG mini-graph renderer ──
+  function renderMiniGraph(chain, rootNodeId, direction) {
+    if (chain.length === 0) return null;
+
+    // Collect unique nodes in chain
+    const nodeIds = new Set([rootNodeId]);
+    chain.forEach(c => { nodeIds.add(c.from); nodeIds.add(c.to); });
+
+    // Build layers via BFS from root
+    const layers = {};
+    const queue = [[rootNodeId, 0]];
+    const visited = new Set([rootNodeId]);
+    while (queue.length) {
+      const [id, dist] = queue.shift();
+      layers[id] = dist;
+      const neighbors = direction === 'down' ? downstream[id] : upstream[id];
+      neighbors.forEach(nid => {
+        if (nodeIds.has(nid) && !visited.has(nid)) {
+          visited.add(nid);
+          queue.push([nid, dist + 1]);
+        }
+      });
+    }
+
+    // Group by layer
+    const layerGroups = {};
+    nodeIds.forEach(id => {
+      const d = layers[id] || 0;
+      if (!layerGroups[d]) layerGroups[d] = [];
+      layerGroups[d].push(id);
+    });
+
+    const layerKeys = Object.keys(layerGroups).map(Number).sort((a, b) => a - b);
+    const colWidth = 140;
+    const rowHeight = 36;
+    const padX = 20;
+    const padY = 20;
+    const maxColHeight = Math.max(...layerKeys.map(k => layerGroups[k].length));
+    const svgW = layerKeys.length * colWidth + padX * 2;
+    const svgH = maxColHeight * rowHeight + padY * 2;
+
+    // Position each node
+    const positions = {};
+    layerKeys.forEach((layerIdx, ci) => {
+      const group = layerGroups[layerIdx];
+      const totalH = group.length * rowHeight;
+      const startY = (svgH - totalH) / 2;
+      group.forEach((id, ri) => {
+        positions[id] = {
+          x: padX + ci * colWidth + colWidth / 2,
+          y: startY + ri * rowHeight + rowHeight / 2
+        };
+      });
+    });
+
+    let svg = `<svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}" xmlns="http://www.w3.org/2000/svg">`;
+
+    // Draw edges
+    chain.forEach(c => {
+      const from = positions[c.from];
+      const to = positions[c.to];
+      if (!from || !to) return;
+      const arrowDir = direction === 'down' ? 1 : -1;
+      const x1 = from.x + arrowDir * 42;
+      const x2 = to.x - arrowDir * 42;
+      svg += `<line x1="${x1}" y1="${from.y}" x2="${x2}" y2="${to.y}" stroke="#30363d" stroke-width="1.5" marker-end="url(#arrow-${direction})"/>`;
+    });
+
+    // Arrow marker
+    svg += `<defs><marker id="arrow-${direction}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">`;
+    svg += `<path d="M 0 0 L 10 5 L 0 10 z" fill="#30363d"/></marker></defs>`;
+
+    // Draw nodes
+    nodeIds.forEach(id => {
+      const n = nodeMap[id];
+      if (!n || !positions[id]) return;
+      const { x, y } = positions[id];
+      const color = layerMap[n.layer] ? layerMap[n.layer].color : '#8b949e';
+      const isRoot = id === rootNodeId;
+      const strokeColor = isRoot ? '#58a6ff' : color;
+      const strokeWidth = isRoot ? 2 : 1;
+      svg += `<rect x="${x - 42}" y="${y - 13}" width="84" height="26" rx="5" fill="${isRoot ? '#1c2333' : '#161b22'}" stroke="${strokeColor}" stroke-width="${strokeWidth}"/>`;
+      const label = n.label.length > 10 ? n.label.substring(0, 9) + '\u2026' : n.label;
+      svg += `<text x="${x}" y="${y + 4}" text-anchor="middle" fill="#e6edf3" font-size="11" font-weight="${isRoot ? '600' : '400'}">${escHtml(label)}</text>`;
+    });
+
+    svg += '</svg>';
+    return svg;
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Build tree ──
+  const treeEl = document.getElementById('treePanel');
+  const detailEl = document.getElementById('detailPanel');
+  let selectedId = null;
+
+  function buildTree() {
+    treeEl.innerHTML = '';
+    LAYERS.forEach(layer => {
+      const items = GRAPH_DATA.nodes.filter(n => n.layer === layer.id);
+      if (items.length === 0) return;
+
+      const group = document.createElement('div');
+      group.className = 'layer-group';
+
+      const header = document.createElement('div');
+      header.className = 'layer-header';
+      header.innerHTML = `<span class="arrow">\u25BC</span><span class="layer-dot" style="background:${layer.color}"></span>${escHtml(layer.name)}<span class="layer-count">${items.length}</span>`;
+      header.addEventListener('click', () => {
+        header.classList.toggle('collapsed');
+      });
+
+      const list = document.createElement('div');
+      list.className = 'layer-items';
+      items.forEach(n => {
+        const item = document.createElement('div');
+        item.className = 'tree-item';
+        item.dataset.id = n.id;
+        item.innerHTML = `<span class="item-label">${escHtml(n.label)}</span><span class="item-path">${escHtml(n.path)}</span>`;
+        item.addEventListener('click', () => selectNode(n.id));
+        list.appendChild(item);
+      });
+
+      group.appendChild(header);
+      group.appendChild(list);
+      treeEl.appendChild(group);
+    });
+  }
+
+  // ── Select node ──
+  function selectNode(id) {
+    selectedId = id;
+    // Update tree selection
+    document.querySelectorAll('.tree-item').forEach(el => {
+      el.classList.toggle('selected', el.dataset.id === id);
+    });
+    // Render detail
+    const n = nodeMap[id];
+    if (!n) return;
+    const layer = layerMap[n.layer] || { name: n.layer, color: '#8b949e' };
+    const upChain = collectChain(id, 'up', 10);
+    const downChain = collectChain(id, 'down', 10);
+    const upCount = new Set(upChain.map(c => c.to)).size;
+    const downCount = new Set(downChain.map(c => c.to)).size;
+    const maxDepth = Math.max(
+      upChain.length ? Math.max(...upChain.map(c => c.depth)) : 0,
+      downChain.length ? Math.max(...downChain.map(c => c.depth)) : 0
+    );
+
+    let html = '';
+    html += `<div class="detail-header">`;
+    html += `<h2>${escHtml(n.label)}</h2>`;
+    html += `<span class="layer-badge" style="background:${layer.color}">${escHtml(layer.name)}</span>`;
+    html += `<span class="file-path">${escHtml(n.path)}</span>`;
+    html += `</div>`;
+
+    if (n.why) {
+      html += `<div class="detail-why"><strong>WHY</strong>${escHtml(n.why)}</div>`;
+    }
+
+    html += `<div class="stats-row">`;
+    html += `<div class="stat-card"><div class="stat-value">${upCount}</div><div class="stat-label">Upstream (dependents)</div></div>`;
+    html += `<div class="stat-card"><div class="stat-value">${downCount}</div><div class="stat-label">Downstream (dependencies)</div></div>`;
+    html += `<div class="stat-card"><div class="stat-value">${maxDepth}</div><div class="stat-label">Max Depth</div></div>`;
+    html += `</div>`;
+
+    // Upstream graph
+    const upSvg = renderMiniGraph(upChain, id, 'up');
+    html += `<div class="graph-section"><h3>Upstream Dependencies <span class="count">\u2014 who depends on ${escHtml(n.label)}</span></h3>`;
+    html += `<div class="svg-container">${upSvg || '<span class="empty-msg">No upstream dependencies</span>'}</div></div>`;
+
+    // Downstream graph
+    const downSvg = renderMiniGraph(downChain, id, 'down');
+    html += `<div class="graph-section"><h3>Downstream Dependencies <span class="count">\u2014 what ${escHtml(n.label)} depends on</span></h3>`;
+    html += `<div class="svg-container">${downSvg || '<span class="empty-msg">No downstream dependencies</span>'}</div></div>`;
+
+    detailEl.innerHTML = html;
+  }
+
+  // ── Search ──
+  const searchInput = document.getElementById('searchInput');
+  searchInput.addEventListener('input', () => {
+    const q = searchInput.value.toLowerCase().trim();
+    document.querySelectorAll('.tree-item').forEach(el => {
+      const id = el.dataset.id;
+      const n = nodeMap[id];
+      if (!q) { el.classList.remove('hidden'); return; }
+      const match = n && (
+        n.label.toLowerCase().includes(q) ||
+        n.path.toLowerCase().includes(q) ||
+        (n.why && n.why.toLowerCase().includes(q)) ||
+        n.id.toLowerCase().includes(q)
+      );
+      el.classList.toggle('hidden', !match);
+    });
+    // Show/hide layer groups with no visible items
+    document.querySelectorAll('.layer-group').forEach(group => {
+      const visibleItems = group.querySelectorAll('.tree-item:not(.hidden)');
+      group.style.display = visibleItems.length === 0 ? 'none' : '';
+    });
+  });
+
+  // ── Expand / Collapse all ──
+  document.getElementById('btnExpand').addEventListener('click', () => {
+    document.querySelectorAll('.layer-header').forEach(h => h.classList.remove('collapsed'));
+  });
+  document.getElementById('btnCollapse').addEventListener('click', () => {
+    document.querySelectorAll('.layer-header').forEach(h => h.classList.add('collapsed'));
+  });
+
+  // ── Resize handle ──
+  const resizeHandle = document.getElementById('resizeHandle');
+  const treePanel = document.getElementById('treePanel');
+  let resizing = false;
+  resizeHandle.addEventListener('mousedown', (e) => {
+    resizing = true;
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', (e) => {
+    if (!resizing) return;
+    const newWidth = Math.max(250, Math.min(600, e.clientX));
+    treePanel.style.width = newWidth + 'px';
+  });
+  document.addEventListener('mouseup', () => { resizing = false; });
+
+  // ── Init ──
+  buildTree();
+
+})();
+</script>
+</body>
+</html>
