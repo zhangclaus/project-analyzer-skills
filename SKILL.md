@@ -72,9 +72,9 @@ Based on the user's selections, read the relevant reference file(s):
 
 | Diagram Type | Reference File | Output Format |
 |---|---|---|
-| Architecture | `references/architecture.md` | Interactive HTML |
+| Architecture | `references/architecture.md` | Interactive HTML (Architecture Explorer) |
 | Data Flow | `references/data-flow.md` | Mermaid markdown |
-| Functional Flow | `references/functional-flow.md` | Interactive HTML |
+| Functional Flow | `references/functional-flow.md` | Interactive HTML (Architecture Explorer) |
 | User Interaction | `references/user-interaction.md` | Mermaid markdown |
 
 Read only the selected types. Each reference file contains:
@@ -126,36 +126,38 @@ For **Architecture** and **Functional Flow** diagrams at **Architecture** or **D
 
 ## Output Format
 
-Architecture and Functional Flow diagrams output as **interactive HTML files** using Cytoscape.js. Data Flow and User Interaction diagrams output as **Mermaid markdown**.
+Architecture and Functional Flow diagrams output as a **single interactive HTML file** — the Architecture Explorer.
 
-**HTML output features:**
-- Zoom (scroll wheel), pan (drag), click-to-highlight dependency chains
-- Right sidebar with module details, WHY annotations, and clickable dependency lists
+**Architecture Explorer features:**
+- Left panel: collapsible tree grouped by architectural layer
+- Right panel: SVG mini-graphs showing full recursive dependency chains (upstream + downstream)
 - Search/filter by module name or WHY text
-- Color-coded by architectural layer
-- Self-contained — all JS inlined, no external dependencies, works offline
+- Expand All / Collapse All
+- Self-contained — pure HTML/CSS/JS, no external dependencies, ~20KB, works offline
 
 **HTML generation process:**
-1. Read the standalone template: `Read templates/cytoscape-standalone.html`
-2. Collect graph data during analysis (nodes with id/label/layer/why, edges with source/target/reason)
+1. Read the template: `Read templates/architecture-explorer.html`
+2. Collect graph data during analysis (nodes with id/label/layer/path/why, edges with source/target/reason)
 3. Replace `PROJECT_TITLE` with the project name (two occurrences: `<title>` and toolbar `<h1>`)
 4. Replace `DIAGRAM_TITLE` with the diagram title (one occurrence: `<title>`)
 5. Replace `/* GRAPH_DATA_PLACEHOLDER */` with the JSON graph data
-6. Write the HTML file to the output directory (e.g., `architecture/dependency-graph.html`)
+6. Write the HTML file to the output directory (e.g., `architecture/architecture-explorer.html`)
 
 **Graph data format:**
 ```javascript
 {
   nodes: [
-    { id: 'module_name', label: 'display_name', layer: 'business', why: 'WHY annotation' }
+    { id: 'module_name', label: 'display_name', layer: 'business', path: 'src/module/', why: 'WHY annotation' }
   ],
   edges: [
-    { source: 'a', target: 'b', reason: 'edge WHY annotation' }
+    { source: 'caller', target: 'callee', reason: 'edge WHY annotation' }
   ]
 }
 ```
 
 **Layer values:** `access` (接入层), `business` (业务层), `tool` (工具层), `data` (数据层), `infra` (基础设施层)
+
+Data Flow and User Interaction diagrams output as **Mermaid markdown**.
 
 ## Output Generation
 
@@ -168,7 +170,7 @@ Create files under `docs/analysis/<project-name>/`:
 - One subdirectory per diagram type with individual diagram files
 
 **For HTML diagram types (Architecture, Functional Flow):**
-Follow the HTML generation process in the Output Format section above — use `templates/cytoscape-standalone.html` as the base.
+Follow the HTML generation process in the Output Format section above — use `templates/architecture-explorer.html` as the base. Generate a single `architecture-explorer.html` file per diagram type.
 
 **For Mermaid diagram types (Data Flow, User Interaction):**
 Write standard markdown files with Mermaid code blocks.
