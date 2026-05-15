@@ -71,42 +71,11 @@ For each function identified in the call chain, infer **why it exists** in the f
 
 ## Output: Interactive HTML
 
-Functional flow diagrams are output as interactive HTML files using Cytoscape.js.
+Functional flow diagrams share the same Architecture Explorer template as architecture diagrams.
 
-### Core Flows (`functional-flow/core-flows.html`)
+**Graph data structure:** Same as architecture — nodes with id/label/layer/path/why, edges with source/target/reason.
 
-Shows the main business logic call chains with WHY annotations.
-
-**Graph data structure:**
-
-```javascript
-{
-  nodes: [
-    // Each function is a node
-    { id: 'func_name', label: 'display_name', layer: 'business', why: 'WHY it exists' },
-    // layer values: 'access' (entry points), 'business' (core logic), 'tool' (utilities), 'data' (persistence), 'infra' (cross-cutting)
-  ],
-  edges: [
-    // Each call relationship is an edge
-    { source: 'caller', target: 'callee', reason: 'WHY the call' },
-  ]
-}
-```
-
-**Node fields:**
-- `id` — unique identifier, typically the function name
-- `label` — display name (e.g., `handleRequest`, `validateInput`)
-- `layer` — categorize by function role: `access` (entry/handler), `business` (core logic), `tool` (utility), `data` (persistence), `infra` (logging/events)
-- `why` — one-line WHY annotation (≤15 chars for Architecture, ≤25 for Deep)
-
-**Edge fields:**
-- `source` — the calling function
-- `target` — the called function
-- `reason` — one-line WHY (≤20 chars for Architecture, ≤30 for Deep)
-
-### Call Chains (`functional-flow/call-chains.html`)
-
-Same structure as core flows, but focused on specific call chains from entry points to leaf functions.
+**Difference from architecture:** Functional flow nodes represent functions/steps rather than modules. Edges represent call chains rather than imports.
 
 ### State Machines (`functional-flow/state-machines.md`)
 
