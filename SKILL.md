@@ -44,7 +44,15 @@ Before analysis, scan the project:
 4. `Read` main entry files to understand the project type
 5. `Glob` for source files to count approximate size
 
-Present summary to user: project name, description, tech stack, size, top-level structure. Then proceed to analysis.
+Present summary to user: project name, description, tech stack, size, top-level structure.
+
+Then ask:
+
+**Language:** Report language?
+- **中文** — 报告用中文写
+- **English** — Report in English
+
+Default: match the project's primary language (if README is in Chinese → 中文, otherwise → English). Proceed to analysis after selection.
 
 ## Analysis
 
@@ -132,7 +140,7 @@ Answer three questions about the project. Process them in order — each builds 
 
 ## Output
 
-Generate a single report + one interactive HTML file.
+Generate a single report + one interactive HTML file. All text content (report, WHY annotations, layer names) uses the language selected during Quick Scan.
 
 ### Report: `docs/analysis/<project-name>/README.md`
 
