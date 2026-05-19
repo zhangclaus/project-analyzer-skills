@@ -1,7 +1,7 @@
 ---
-name: project-xray-skills
+name: project-analyzer-skills
 license: MIT
-github: https://github.com/zhangclaus/project-xray-skills
+github: https://github.com/zhangclaus/project-analyzer-skills
 description:
   为任何代码库生成可视化文档 — 架构图、数据流图、功能流程图、用户交互模式。
   触发场景：用户想理解、分析或文档化一个项目，如 "分析这个项目"、"帮我理解这个代码库"、

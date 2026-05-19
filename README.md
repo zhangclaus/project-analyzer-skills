@@ -1,4 +1,4 @@
-# Project X-Ray Skills
+# Project Analyzer Skills
 
 An [Agent Skills](https://agentskills.io/specification) skill that generates visual documentation for any codebase — architecture diagrams, data flow diagrams, functional flow charts, and user interaction patterns.
 
@@ -17,7 +17,7 @@ Give it a local path or a GitHub URL, and it will analyze the project and produc
 ## Installation
 
 ```bash
-npx skills add zhangclaus/project-xray-skills --agent claude-code -g
+npx skills add zhangclaus/project-analyzer-skills --agent claude-code -g
 ```
 
 Works with Claude Code, Cursor, Windsurf, Copilot CLI, and other [Agent Skills compatible tools](https://agentskills.io/clients).
@@ -38,7 +38,7 @@ Just ask naturally:
 Or invoke directly:
 
 ```
-/project-xray-skills
+/project-analyzer-skills
 ```
 
 ## How It Works
@@ -141,7 +141,7 @@ The skill works with any language by analyzing directory structure and imports. 
 ## Project Structure
 
 ```
-project-xray-skills/
+project-analyzer-skills/
 ├── SKILL.md                        # Main skill orchestrator
 ├── references/
 │   ├── architecture.md             # Architecture analysis guide
