@@ -1,18 +1,16 @@
 # Project Analyzer Skills
 
-An [Agent Skills](https://agentskills.io/specification) skill that generates visual documentation for any codebase — architecture diagrams, data flow diagrams, functional flow charts, and user interaction patterns.
+分析任何代码库，回答三个核心问题：**做了什么**、**流程什么样**、**创新在哪**。
 
-Give it a local path or a GitHub URL, and it will analyze the project and produce structured Markdown reports with embedded Mermaid diagrams.
-
+生成结构化报告 + 交互式架构浏览器。
 
 ## Features
 
-- **Interactive HTML diagrams** — Architecture Explorer with layered tree, dependency mini-graphs, search, expand/collapse
-- **Mermaid markdown** — Data Flow & User Interaction for GitHub compatibility
-- **3 analysis depths** — Overview, Architecture-level, Deep (function-level)
-- **Multiple input sources** — Local directory or GitHub URL
-- **Interactive workflow** — Step-by-step guidance with confirmation at each stage
-- **Configurable** — Choose depth, diagram types, and output format
+- **3 个核心问题** — 不是生成一堆图，而是回答"做了什么、怎么跑的、有什么不同"
+- **交互式架构浏览器** — 分层折叠树、依赖链迷你图、搜索、展开/收起
+- **结构化报告** — 一份 README 说清楚项目全貌
+- **自动清理** — 重新分析时自动删除旧文件
+- **自包含** — HTML 文件 ~20KB，无外部依赖，离线可用
 
 ## Installation
 
@@ -29,7 +27,6 @@ Just ask naturally:
 ```
 "分析这个项目"
 "帮我理解这个代码库"
-"generate architecture diagram for https://github.com/expressjs/express"
 "explain how this project works"
 "项目详解 /path/to/local/project"
 "codebase overview"
@@ -45,121 +42,44 @@ Or invoke directly:
 
 ```mermaid
 flowchart TD
-    Input[User provides path/URL] --> Scan[Quick scan project structure]
-    Scan --> Summary[Show project summary]
-    Summary --> Select[User selects depth & diagram types]
-    Select --> Analyze[Analyze codebase]
-    Analyze --> Diagram[Generate Mermaid diagrams]
-    Diagram --> Review[User reviews & iterates]
-    Review --> Output[Output report to docs/analysis/]
+    Input[User provides path/URL] --> Scan[Quick scan]
+    Scan --> Q1[What does it do?]
+    Q1 --> Q2[How does it work?]
+    Q2 --> Q3[What's innovative?]
+    Q3 --> Output[Report + Explorer HTML]
 ```
 
-### Step by step
-
 1. **Input** — Provide a local path or GitHub URL
-2. **Scan** — The skill reads README, package.json/Cargo.toml/go.mod, and directory structure
-3. **Select** — Choose analysis depth (Overview / Architecture / Deep) and diagram types
-4. **Analyze** — Uses Glob, Read, Grep to explore the codebase
-5. **Generate** — Produces Mermaid diagrams with explanations
-6. **Review** — Confirm each diagram, iterate if needed
-7. **Output** — Saves structured report to `docs/analysis/<project-name>/`
+2. **Quick Scan** — Read README, config files, directory structure
+3. **Q1: What does it do?** — Map modules, classify layers, annotate WHY
+4. **Q2: How does it work?** — Trace the main workflow end-to-end
+5. **Q3: What's innovative?** — Identify key design decisions
+6. **Output** — One report + one interactive HTML
 
-## Output Structure
+## Output
 
 ```
 docs/analysis/<project-name>/
-├── README.md                           # Overview report with index
-├── architecture/
-│   ├── architecture-explorer.html      # Interactive architecture explorer (self-contained)
-│   └── tech-stack.md                   # Tech stack analysis
-├── data-flow/
-│   ├── data-flow-diagram.md           # Mermaid
-│   └── data-model.md                  # Mermaid
-├── functional-flow/
-│   ├── functional-explorer.html       # Interactive functional flow explorer (self-contained)
-│   └── state-machines.md             # Mermaid state machines
-└── user-interaction/
-    ├── user-flow.md                   # Mermaid
-    └── page-navigation.md             # Mermaid
+├── README.md                    # 结构化报告（三个问题的回答）
+└── architecture-explorer.html   # 交互式架构浏览器
 ```
 
-## Diagram Types
+### Report (README.md)
 
-### Architecture
+三个部分：
+- **What It Does** — 项目概览、核心功能、模块表（层 + WHY）
+- **How It Works** — 主流程 Mermaid 图 + 逐步解释
+- **What's Innovative** — 3-5 个关键设计决策 + 为什么这样做
 
-Module dependencies, component relationships, tech stack overview. **Output: Interactive HTML (Architecture Explorer)** — layered tree with dependency mini-graphs, search, expand/collapse.
+### Explorer (architecture-explorer.html)
 
-### Data Flow
-
-Data entry points, transformations, storage, and outputs.
-
-```mermaid
-flowchart LR
-    Input[User Input] --> Validate[Validation]
-    Validate --> Transform[Business Logic]
-    Transform --> Store[(Database)]
-    Transform --> Output[Response]
-```
-
-### Functional Flow
-
-Core business logic, function call chains, state machines. **Output: Interactive HTML (Architecture Explorer)** for call chains, **Mermaid** for state machines.
-
-### User Interaction
-
-User entry points, navigation paths, interaction sequences.
-
-```mermaid
-flowchart TD
-    Landing[Landing Page] --> Login[Login]
-    Landing --> Signup[Signup]
-    Login --> Dashboard[Dashboard]
-    Signup --> Dashboard
-```
-
-## Analysis Depths
-
-| Depth | Scope | Best For |
-|-------|-------|----------|
-| **Overview** | Directory structure, tech stack, module boundaries | First look at a project |
-| **Architecture** | Module dependencies, APIs, data models | Understanding system design |
-| **Deep** | Function call chains, conditionals, state machines | Debugging or contributing |
+- 左侧：按层折叠的模块树
+- 右侧：点击模块 → 递归展示上下游依赖链（SVG 迷你图）
+- 搜索、展开/收起
 
 ## Supported Languages
 
-The skill works with any language by analyzing directory structure and imports. Best results with:
-
-- TypeScript / JavaScript
-- Python
-- Go
-- Rust
-- Java / Kotlin
-- Ruby
-- PHP
-- C / C++
-
-## Project Structure
-
-```
-project-analyzer-skills/
-├── SKILL.md                        # Main skill orchestrator
-├── references/
-│   ├── architecture.md             # Architecture analysis guide
-│   ├── data-flow.md                # Data flow analysis guide
-│   ├── functional-flow.md          # Functional flow analysis guide
-│   └── user-interaction.md         # User interaction flow guide
-└── templates/
-    └── report-template.md          # Output report template
-```
-
-## Contributing
-
-Contributions welcome! The skill follows the [Agent Skills specification](https://agentskills.io/specification).
-
-To add a new diagram type:
-1. Create a reference file in `references/`
-2. Add the dispatch entry in `SKILL.md`
-3. Update this README
+Any language. Best results with: TypeScript/JavaScript, Python, Go, Rust, Java/Kotlin, Ruby, PHP, C/C++.
 
 ## License
 

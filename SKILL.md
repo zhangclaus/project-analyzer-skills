@@ -3,18 +3,22 @@ name: project-analyzer-skills
 license: MIT
 github: https://github.com/zhangclaus/project-analyzer-skills
 description:
-  为任何代码库生成可视化文档 — 架构图、数据流图、功能流程图、用户交互模式。
+  分析任何代码库，回答三个核心问题：做了什么、流程什么样、创新在哪。
+  生成结构化报告 + 交互式架构浏览器。
   触发场景：用户想理解、分析或文档化一个项目，如 "分析这个项目"、"帮我理解这个代码库"、
   "generate architecture diagram"、"explain how this project works"、"项目详解"、
   "codebase overview"、"project deep dive"，或用户提供 GitHub URL / 本地路径并询问其结构。
 metadata:
   author: zhangclaus
-  version: "1.0.0"
+  version: "2.0.0"
 ---
 
 # Project Analysis
 
-Generate visual documentation for any codebase — architecture diagrams, data flows, functional flows, and user interaction patterns.
+分析任何代码库，回答三个核心问题：
+1. **做了什么** — 解决什么问题，核心功能
+2. **流程什么样** — 主流程怎么跑的
+3. **创新在哪** — 设计上有什么不同
 
 ## Input Handling
 
@@ -32,116 +36,125 @@ The user provides either a local path or a GitHub URL.
 
 ## Quick Scan
 
-Before asking detailed questions, scan the project:
+Before analysis, scan the project:
 
-1. `Glob` for `**/*` to get directory structure (limit to top 2-3 levels)
-2. `Read` these files if they exist:
-   - `README.md` or `readme.md`
-   - `package.json`, `Cargo.toml`, `go.mod`, `pyproject.toml`, `pom.xml` (tech stack)
-   - Main entry files (`src/index.ts`, `main.py`, `cmd/main.go`, etc.)
-3. `Grep` for import/require patterns to understand module boundaries
+1. `Glob` for `**/*` to get directory structure (top 2-3 levels)
+2. `Read` config files to detect tech stack: `package.json`, `Cargo.toml`, `go.mod`, `pyproject.toml`, `pom.xml`
+3. `Read` README for project description
+4. `Read` main entry files to understand the project type
+5. `Glob` for source files to count approximate size
 
-Present a summary to the user:
-- Project name and description
-- Tech stack detected
-- Approximate size (file count)
-- Top-level module structure
+Present summary to user: project name, description, tech stack, size, top-level structure. Then proceed to analysis.
 
-## Interactive Selection
+## Analysis
 
-Ask the user (one question at a time):
+Answer three questions about the project. Process them in order — each builds on the previous.
 
-**Question 1: Analysis depth**
-- **Overview** — directory structure, tech stack, module boundaries
-- **Architecture** — module dependencies, APIs, data models
-- **Deep** — function call chains, conditionals, detailed flows
+### Question 1: What does it do?
 
-**Question 2: Diagram types** (multi-select)
-- Architecture diagrams
-- Data flow diagrams
-- Functional flow diagrams
-- User interaction flows
+**Goal:** Understand the project's purpose and core capabilities.
 
-**Question 3: Output format** (if user has a preference)
-- Interactive HTML (default — opens in browser, zoom/pan/click)
-- Mermaid markdown (GitHub-compatible, static)
+**Steps:**
+1. `Read` README, docs, and main entry files to understand the problem domain
+2. `Grep` for exported functions/classes/APIs to identify core capabilities
+3. `Glob` source directories to map module boundaries
+4. For each major module: `Read` its entry file, `Grep` its exports, infer WHY it exists
+5. Classify each module into a layer:
+   - `access` — entry points (CLI, API routes, UI, MCP server)
+   - `business` — core logic (services, controllers, engines)
+   - `tool` — utilities (adapters, formatters, validators)
+   - `data` — storage (repositories, stores, caches)
+   - `infra` — cross-cutting (config, logging, events, workers)
+6. Map cross-module dependencies: `Grep` for import patterns between modules
 
-## Analysis Dispatch
+**Output:** Module list with layer classification, WHY annotations, and dependency graph data.
 
-Based on the user's selections, read the relevant reference file(s):
+**Layer detection rules:**
+- Module exports route handlers / CLI commands → `access`
+- Module has business logic but no framework imports → `business`
+- Module provides pure functions or type definitions → `tool`
+- Module imports ORM / database / file system for CRUD → `data`
+- Module handles config, logging, events, process management → `infra`
+- When ambiguous → `business`
 
-| Diagram Type | Reference File | Output Format |
-|---|---|---|
-| Architecture | `references/architecture.md` | Interactive HTML (Architecture Explorer) |
-| Data Flow | `references/data-flow.md` | Mermaid markdown |
-| Functional Flow | `references/functional-flow.md` | Interactive HTML (Architecture Explorer) |
-| User Interaction | `references/user-interaction.md` | Mermaid markdown |
+### Question 2: How does it work?
 
-Read only the selected types. Each reference file contains:
-- Detailed analysis steps
-- Mermaid/Graphviz diagram templates
-- Depth-level adjustments
-- Example output
+**Goal:** Trace the ONE main workflow end-to-end.
 
-## Analysis Execution
+**Steps:**
+1. Identify the primary entry point (the most common user action)
+2. From the entry point, trace the call chain step by step:
+   - `Read` each function's implementation
+   - Follow calls to other modules
+   - Continue until the workflow completes (returns result, writes output, etc.)
+3. At each step, note:
+   - What happens (function name + brief action)
+   - Which module it's in
+   - Any branching (if/else, error handling)
+   - Any side effects (DB write, API call, file I/O)
+4. Identify the "critical path" — the happy path that most executions follow
 
-For each selected diagram type, follow the reference file's steps:
+**Output:** Linear flow description with branching points. Rendered as a Mermaid flowchart.
 
-1. **Explore** — use Glob, Read, Grep to gather information
-2. **Analyze** — identify components, relationships, flows
-3. **Diagram** — generate the diagram using Mermaid syntax
-4. **Confirm** — show the diagram to the user, ask if it looks right
-5. **Iterate** — adjust based on feedback before moving to next type
+**How to find THE main flow:**
+- Look for the most prominent CLI command or API endpoint
+- Check README for the primary use case
+- Find the function with the most incoming references
+- If unclear, ask the user which flow they care about
 
-Process diagram types in this order (if selected):
-1. Architecture (provides context for other types)
-2. Data Flow
-3. Functional Flow
-4. User Interaction
+### Question 3: What's innovative?
 
-## WHY Annotations
+**Goal:** Identify what makes this project's design different from typical approaches.
 
-For **Architecture** and **Functional Flow** diagrams at **Architecture** or **Deep** depth, add WHY annotations to explain design decisions.
+**Steps:**
+1. Identify the project's architectural pattern (monolith, microservices, event-driven, plugin system, etc.)
+2. Look for unusual design decisions:
+   - `Grep` for patterns like `class.*Mixin`, `@decorator`, `metaclass`, `__init_subclass__`
+   - Check for custom protocols, message formats, or serialization
+   - Look for non-standard dependency injection or service discovery
+3. Compare with common patterns in the same domain:
+   - If it's a web framework: how does routing work differently?
+   - If it's a CLI tool: how does it handle config/plugins?
+   - If it's a library: what's the API design philosophy?
+4. Check for interesting technical choices:
+   - Concurrency model (async, threads, processes, actors)
+   - State management (immutable, event sourcing, CRDT)
+   - Extension mechanism (plugins, hooks, middleware)
+5. Read design docs or ADRs if they exist (`docs/`, `adr/`, `decisions/`)
 
-**When to enable:**
-- Diagram type = Architecture or Functional Flow
-- Depth = Architecture or Deep (Overview stays lightweight, no WHY)
-
-**Format:**
-- Modules ≤ 20: Inline labels — `ModuleName["name\nWHY statement"]`
-- Modules > 20: Subgraph grouping — group modules by layer, subgraph title includes WHY
-
-**Node WHY:** Each module node gets a one-line explanation of why it exists (not what it does).
-- Architecture depth: ≤15 characters
-- Deep depth: ≤25 characters
-
-**Edge WHY:** Each dependency edge gets a one-line explanation of why the dependency exists.
-- Architecture depth: ≤20 characters
-- Deep depth: ≤30 characters
+**Output:** 3-5 key innovations with explanations of WHY they matter.
 
 **Quality rules:**
-- WHY must answer "why", not describe "what"
-- Good: "封装业务规则，不依赖框架"
-- Bad: "包含核心业务逻辑"
+- Don't list features — explain design decisions
+- Good: "用事件溯源替代状态快照，支持任意时间点回放"
+- Bad: "支持事件溯源"
+- Each innovation should answer: "为什么这样做？好在哪？"
 
-## Output Format
+## Output
 
-Architecture and Functional Flow diagrams output as a **single interactive HTML file** — the Architecture Explorer.
+Generate a single report + one interactive HTML file.
 
-**Architecture Explorer features:**
-- Left panel: collapsible tree grouped by architectural layer
-- Right panel: SVG mini-graphs showing full recursive dependency chains (upstream + downstream)
-- Search/filter by module name or WHY text
-- Expand All / Collapse All
-- Self-contained — pure HTML/CSS/JS, no external dependencies, ~20KB, works offline
+### Report: `docs/analysis/<project-name>/README.md`
+
+Read `templates/report-template.md` for the structure. The report has three sections matching the three questions:
+
+1. **What it does** — project overview, core features, module table with layer/WHY
+2. **How it works** — main workflow Mermaid diagram, step-by-step explanation
+3. **What's innovative** — key design decisions with rationale
+
+Plus a Mermaid architecture overview diagram showing modules grouped by layer.
+
+### Explorer: `docs/analysis/<project-name>/architecture-explorer.html`
+
+Interactive HTML for drilling into module details and dependencies.
 
 **HTML generation process:**
 1. Read the template: `Read templates/architecture-explorer.html`
-2. Collect graph data during analysis (nodes with id/label/layer/path/why, edges with source/target/reason)
+2. Collect graph data during Question 1 analysis
 3. Replace `PROJECT_TITLE` with the project name (two occurrences: `<title>` and toolbar `<h1>`)
 4. Replace `DIAGRAM_TITLE` with the diagram title (one occurrence: `<title>`)
 5. Replace `/* GRAPH_DATA_PLACEHOLDER */` with the JSON graph data
-6. Write the HTML file to the output directory (e.g., `architecture/architecture-explorer.html`)
+6. Write the HTML file to `docs/analysis/<project-name>/architecture-explorer.html`
 
 **Graph data format:**
 ```javascript
@@ -155,25 +168,20 @@ Architecture and Functional Flow diagrams output as a **single interactive HTML 
 }
 ```
 
-**Layer values:** `access` (接入层), `business` (业务层), `tool` (工具层), `data` (数据层), `infra` (基础设施层)
+**Layer values:** `access`, `business`, `tool`, `data`, `infra`
 
-Data Flow and User Interaction diagrams output as **Mermaid markdown**.
+**Completeness check before generating HTML:**
+- Every layer must have at least one node (if the project has that layer)
+- Every edge must have a reason
+- Every node must have a path and why
+- If a layer is empty but should exist, re-scan for missed modules
 
-## Output Generation
+### Cleanup
 
-After all diagrams are confirmed, generate the report.
-
-Read `templates/report-template.md` for the output structure.
-
-Create files under `docs/analysis/<project-name>/`:
-- `README.md` — overview report with simplified Mermaid diagram and links to interactive HTML files
-- One subdirectory per diagram type with individual diagram files
-
-**For HTML diagram types (Architecture, Functional Flow):**
-Follow the HTML generation process in the Output Format section above — use `templates/architecture-explorer.html` as the base. Generate a single `architecture-explorer.html` file per diagram type.
-
-**For Mermaid diagram types (Data Flow, User Interaction):**
-Write standard markdown files with Mermaid code blocks.
+Before writing output, delete any existing files in the output directory from previous analyses:
+```
+rm -rf docs/analysis/<project-name>/*
+```
 
 ## Error Handling
 
@@ -183,13 +191,12 @@ Write standard markdown files with Mermaid code blocks.
 | GitHub repo inaccessible | "Cannot access that repository. Check the URL or your network." |
 | Project too large (>1000 files) | "This project has many files. Want to focus on a specific module?" |
 | Unknown language | "I don't recognize this language/framework. Results may be less accurate." |
-| Diagram syntax error | Auto-fix Mermaid syntax (escape special chars, simplify labels) |
+| Can't identify main flow | Ask the user which flow they want analyzed |
 
 ## Review Loop
 
 After generating the report:
 1. Show the user the README.md overview
-2. Tell the user to open the HTML files in their browser to explore interactively
-3. Ask: "Does this look right? Want to adjust anything?"
-4. If changes requested, update the relevant diagram(s) and regenerate
-5. Offer to add more diagram types or go deeper on any section
+2. Tell the user to open architecture-explorer.html to explore interactively
+3. Ask: "Does this capture the key points? Want to adjust anything?"
+4. If changes requested, update and regenerate
