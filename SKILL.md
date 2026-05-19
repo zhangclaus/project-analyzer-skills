@@ -27,7 +27,7 @@ The user provides either a local path or a GitHub URL.
 **GitHub URL:**
 1. Extract owner/repo from the URL
 2. Use `Bash` with `gh repo view <owner/repo>` to verify accessibility
-3. Use `Bash` with `gh repo clone <owner/repo> /tmp/project-xray-skills-<repo>` to clone
+3. Use `Bash` with `gh repo clone <owner/repo> /tmp/project-analyzer-skills-<repo>` to clone
 4. If inaccessible, ask the user to check the URL or network
 
 ## Quick Scan
