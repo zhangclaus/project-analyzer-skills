@@ -84,7 +84,14 @@ Answer three questions about the project. Process them in order — each builds 
    - Subsystem name must be human-readable (e.g. "对抗引擎", not "adversarial_engine")
    - Module `name` field must be Chinese/display name (e.g. "对抗评估器", not "adversarial")
    - Aim for 8-12 subsystems total; avoid groups with only 1 module
-8. **Extract 3-5 core concepts (domain model):**
+8. **For each subsystem, extract its internal flow and key details:**
+   - `Read` the subsystem's core module code to understand its process
+   - `flow`: ordered list of steps the subsystem executes (e.g. "意图分析 → 向量搜索 → 重排序 → 收敛检查")
+   - Each step: `name` (Chinese/display), `module` (which module handles it), `desc` (what happens, one sentence)
+   - `key_details`: important facts a learner must know — search sources, thresholds, algorithms, defaults, platform-specific behavior
+   - **CRITICAL: ALL details must come from reading the actual code.** Do NOT guess or infer. If you can't find a specific number/threshold in the code, omit it rather than fabricate.
+   - Look for: function bodies, config constants, default parameters, conditional branches, loop logic
+9. **Extract 3-5 core concepts (domain model):**
    - Identify the key abstractions the project revolves around (e.g. Crew, Worker, Turn, Challenge)
    - For each concept: `name` (Chinese/display name), `what` (one sentence: what is it), `why` (one sentence: why does it exist)
    - These are the concepts someone must understand BEFORE reading code
@@ -186,7 +193,21 @@ Interactive HTML for drilling into module details and dependencies.
 ```javascript
 {
   subsystems: [
-    { id: 'adversarial_engine', name: '对抗引擎', icon: '⚔️', color: '#1f6feb', desc: '一句话描述', modules: ['adversarial', 'review_verdict'] }
+    {
+      id: 'semantic_retrieval', name: '语义检索', icon: '🔍', color: '#a371f7',
+      desc: '目录递归检索 + 重排序',
+      modules: ['retriever', 'intent_analyzer', 'rerank_client'],
+      flow: [
+        { step: 1, name: '意图分析', module: 'intent_analyzer', desc: '将查询拆解为类型过滤、关键词、范围等检索条件' },
+        { step: 2, name: '向量搜索', module: 'hierarchical_retriever', desc: '搜 3 个源：user/memories + agent/memories + agent/skills，每源 topk=10' }
+      ],
+      key_details: [
+        '搜索 3 个源：viking://user/memories, viking://agent/memories, viking://agent/skills',
+        '目录递归最多 3 轮，topk 不再变化时收敛',
+        '分数传播：子目录得分 × 1.2 向上聚合',
+        '去重阈值：相似度 > 0.92 的结果合并'
+      ]
+    }
   ],
   nodes: [
     { id: 'module_id', name: '模块中文名', subsystem: 'adversarial_engine', layer: 'business', why: 'WHY annotation' }
@@ -210,6 +231,9 @@ Interactive HTML for drilling into module details and dependencies.
 - Every edge must have a reason
 - Every node must have `name`, `subsystem`, and `why`
 - Every node's `subsystem` must reference a valid subsystem id
+- Every subsystem should have a `flow` (at least 2 steps) if the subsystem has a clear process
+- Every `flow` step must have `name`, `module`, and `desc`
+- `key_details` must be factual — every detail must be traceable to a specific code location
 - If a layer is empty but should exist, re-scan for missed modules
 
 ### Cleanup

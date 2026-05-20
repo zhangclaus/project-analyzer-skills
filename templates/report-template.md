@@ -76,6 +76,16 @@ flowchart TD
 
 <For each significant step, briefly explain what happens and why>
 
+### Key Subsystem Flows
+
+> For each major subsystem, show its internal flow and key details. Open [architecture-explorer.html](architecture-explorer.html) for interactive exploration.
+
+**<Subsystem Name>**: <step1> → <step2> → <step3> → ...
+- <key detail 1>
+- <key detail 2>
+
+(Repeat for each subsystem with a clear internal process)
+
 ## What's Innovative
 
 <3-5 key design decisions that make this project different. Each one should explain WHY, not just WHAT.>
