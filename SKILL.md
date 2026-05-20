@@ -80,8 +80,19 @@ Answer three questions about the project. Process them in order — each builds 
    - Subsystem name must be human-readable (e.g. "对抗引擎", not "adversarial_engine")
    - Module `name` field must be Chinese/display name (e.g. "对抗评估器", not "adversarial")
    - Aim for 8-12 subsystems total; avoid groups with only 1 module
+8. **Extract 3-5 core concepts (domain model):**
+   - Identify the key abstractions the project revolves around (e.g. Crew, Worker, Turn, Challenge)
+   - For each concept: `name` (Chinese/display name), `what` (one sentence: what is it), `why` (one sentence: why does it exist)
+   - These are the concepts someone must understand BEFORE reading code
+   - Look for: main data structures, key classes, central protocol/message types
+9. **Determine reading order (3-5 files):**
+   - Pick the files a learner should read first to understand the project
+   - Order from "entry point" to "core logic" to "key mechanism"
+   - For each file: `path`, `name` (Chinese/display name), `read_for` (what to look for in this file)
+   - First file should be the main entry point or README
+   - Each subsequent file should build on the previous
 
-**Output:** Module list with layer classification, WHY annotations, dependency graph data, and subsystem groupings.
+**Output:** Module list with layer classification, WHY annotations, dependency graph data, subsystem groupings, core concepts, and reading guide.
 
 **Layer detection rules:**
 - Module exports route handlers / CLI commands → `access`
