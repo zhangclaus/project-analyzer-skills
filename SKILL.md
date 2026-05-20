@@ -85,14 +85,8 @@ Answer three questions about the project. Process them in order — each builds 
    - For each concept: `name` (Chinese/display name), `what` (one sentence: what is it), `why` (one sentence: why does it exist)
    - These are the concepts someone must understand BEFORE reading code
    - Look for: main data structures, key classes, central protocol/message types
-9. **Determine reading order (3-5 files):**
-   - Pick the files a learner should read first to understand the project
-   - Order from "entry point" to "core logic" to "key mechanism"
-   - For each file: `path`, `name` (Chinese/display name), `read_for` (what to look for in this file)
-   - First file should be the main entry point or README
-   - Each subsequent file should build on the previous
 
-**Output:** Module list with layer classification, WHY annotations, dependency graph data, subsystem groupings, core concepts, and reading guide.
+**Output:** Module list with layer classification, WHY annotations, dependency graph data, subsystem groupings, and core concepts.
 
 **Layer detection rules:**
 - Module exports route handlers / CLI commands → `access`

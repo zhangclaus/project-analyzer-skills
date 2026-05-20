@@ -46,16 +46,6 @@ graph TB
 | <concept_name> | <what is it, one sentence> | <why does it exist, one sentence> |
 | ... | ... | ... |
 
-### Reading Guide
-
-> Suggested reading order to understand the project. Start from the top.
-
-| # | File | What to look for |
-|---|------|-----------------|
-| 1 | `<path>` | <what to focus on in this file> |
-| 2 | `<path>` | <what to focus on> |
-| ... | ... | ... |
-
 ## How It Works
 
 <Explain the main workflow in plain language, then show the flow diagram>
