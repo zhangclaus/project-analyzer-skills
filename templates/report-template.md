@@ -52,6 +52,19 @@ graph TB
 
 <Explain the main workflow in plain language, then show the flow diagram>
 
+### Integration Model
+
+<State whether the project is "active call" (user invokes directly) or "passive trigger" (runs in response to host events). For passive trigger projects, show all trigger points:>
+
+**For passive trigger / hook / plugin projects:**
+
+| Trigger | When it fires | What it does |
+|---------|--------------|-------------|
+| <hook_name> | <timing> | <action> |
+| ... | ... | ... |
+
+**For active call projects:** Skip this table, go directly to Main Flow.
+
 ### Main Flow: <flow name>
 
 ```mermaid

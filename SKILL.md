@@ -105,13 +105,18 @@ Answer three questions about the project. Process them in order — each builds 
 
 ### Question 2: How does it work?
 
-**Goal:** Trace the ONE main workflow end-to-end.
+**Goal:** Trace the main workflow end-to-end.
 
 **Steps:**
-1. Identify the primary entry point (the most common user action)
-2. From the entry point, trace the call chain step by step:
-   - `Read` each function's implementation
-   - Follow calls to other modules
+1. **Identify the integration model:**
+   - **Active call**: User invokes the tool directly (CLI command, API call, function import). Entry point = the most common command/endpoint.
+   - **Passive trigger**: Tool runs in response to host events (hooks, plugins, middleware, lifecycle callbacks). Entry points = a set of trigger points.
+   - `Grep` for hook registrations, plugin mounts, event listeners, lifecycle callbacks, middleware chains
+   - For passive trigger projects: list ALL trigger points with their timing and purpose
+2. **Trace the workflow:**
+   - For active call: trace from the primary entry point through the call chain
+   - For passive trigger: trace EACH trigger's flow, and show the lifecycle sequence (when triggers fire relative to each other)
+   - `Read` each function's implementation, follow calls to other modules
    - Continue until the workflow completes (returns result, writes output, etc.)
 3. At each step, note:
    - What happens (function name + brief action)
@@ -120,12 +125,15 @@ Answer three questions about the project. Process them in order — each builds 
    - Any side effects (DB write, API call, file I/O)
 4. Identify the "critical path" — the happy path that most executions follow
 
-**Output:** Linear flow description with branching points. Rendered as a Mermaid flowchart.
+**Output:**
+- For active call: Linear flow diagram with branching points (Mermaid flowchart)
+- For passive trigger: Lifecycle diagram showing all triggers, their timing, and what each does (Mermaid flowchart or table)
 
 **How to find THE main flow:**
 - Look for the most prominent CLI command or API endpoint
 - Check README for the primary use case
 - Find the function with the most incoming references
+- For hook/plugin projects: find the hook registration file, trace each hook's handler
 - If unclear, ask the user which flow they care about
 
 ### Question 3: What's innovative?
