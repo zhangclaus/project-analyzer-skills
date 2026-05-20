@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,11 +15,6 @@
     --hover: #1f2937;
     --selected: #1c2333;
     --accent: #58a6ff;
-    --layer-access: #1f6feb;
-    --layer-business: #f0883e;
-    --layer-tool: #a371f7;
-    --layer-data: #3fb950;
-    --layer-infra: #8b949e;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -34,271 +29,139 @@
 
   /* Toolbar */
   .toolbar {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 16px;
-    background: var(--sidebar-bg);
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 16px; background: var(--sidebar-bg);
+    border-bottom: 1px solid var(--border); flex-shrink: 0;
   }
-  .toolbar h1 {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text);
-    white-space: nowrap;
-  }
-  .toolbar .subtitle {
-    font-size: 13px;
-    color: var(--text-muted);
-    white-space: nowrap;
-  }
+  .toolbar h1 { font-size: 16px; font-weight: 600; white-space: nowrap; }
+  .toolbar .subtitle { font-size: 13px; color: var(--text-muted); white-space: nowrap; }
   .toolbar .spacer { flex: 1; }
-  .search-box {
-    position: relative;
-    width: 240px;
-  }
+  .search-box { position: relative; width: 240px; }
   .search-box input {
-    width: 100%;
-    padding: 6px 10px 6px 30px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--text);
-    font-size: 13px;
-    outline: none;
+    width: 100%; padding: 6px 10px 6px 30px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 6px; color: var(--text); font-size: 13px; outline: none;
   }
-  .search-box input:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.15);
-  }
+  .search-box input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(88,166,255,0.15); }
   .search-box::before {
-    content: "\u26B2";
-    position: absolute;
-    left: 9px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-dim);
-    font-size: 13px;
-    pointer-events: none;
+    content: "\u26B2"; position: absolute; left: 9px; top: 50%;
+    transform: translateY(-50%); color: var(--text-dim); font-size: 13px; pointer-events: none;
   }
-  .btn {
-    padding: 5px 12px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--text-muted);
-    font-size: 12px;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-  .btn:hover { background: var(--hover); color: var(--text); }
 
   /* Main layout */
-  .main {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-  }
+  .main { display: flex; flex: 1; overflow: hidden; }
 
-  /* Left panel - tree */
-  .tree-panel {
-    width: 420px;
-    min-width: 300px;
-    background: var(--sidebar-bg);
-    border-right: 1px solid var(--border);
-    overflow-y: auto;
-    flex-shrink: 0;
+  /* Left sidebar - subsystem list */
+  .sidebar {
+    width: 280px; min-width: 240px; background: var(--sidebar-bg);
+    border-right: 1px solid var(--border); overflow-y: auto; flex-shrink: 0;
   }
-  .layer-group { border-bottom: 1px solid var(--border); }
-  .layer-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 14px;
-    cursor: pointer;
-    user-select: none;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-muted);
-    position: sticky;
-    top: 0;
-    background: var(--sidebar-bg);
-    z-index: 1;
+  .subsystem { border-bottom: 1px solid var(--border); }
+  .subsystem-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px; cursor: pointer; user-select: none;
+    transition: background 0.1s;
   }
-  .layer-header:hover { background: var(--hover); }
-  .layer-header .arrow {
-    font-size: 10px;
-    transition: transform 0.15s;
-    color: var(--text-dim);
-    width: 12px;
-    text-align: center;
+  .subsystem-header:hover { background: var(--hover); }
+  .subsystem-header.active { background: var(--selected); border-left: 3px solid var(--accent); }
+  .subsystem-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; flex-shrink: 0;
   }
-  .layer-header.collapsed .arrow { transform: rotate(-90deg); }
-  .layer-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-  .layer-count {
-    margin-left: auto;
-    font-size: 11px;
-    color: var(--text-dim);
-    font-weight: 400;
-  }
-  .layer-items { padding: 0 0 4px 0; }
-  .layer-header.collapsed + .layer-items { display: none; }
-  .tree-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 7px 14px 7px 34px;
-    cursor: pointer;
-    font-size: 13px;
-    color: var(--text);
-    border-left: 3px solid transparent;
-  }
-  .tree-item:hover { background: var(--hover); }
-  .tree-item.selected {
-    background: var(--selected);
-    border-left-color: var(--accent);
-  }
-  .tree-item .item-label { flex: 1; }
-  .tree-item .item-path {
-    font-size: 11px;
-    color: var(--text-dim);
-    max-width: 140px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .tree-item.hidden { display: none; }
-
-  /* Right panel - detail */
-  .detail-panel {
-    flex: 1;
-    overflow-y: auto;
-    padding: 24px 32px;
-  }
-  .detail-empty {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    color: var(--text-dim);
-    font-size: 14px;
-  }
-  .detail-header {
-    margin-bottom: 24px;
-  }
-  .detail-header h2 {
-    font-size: 22px;
-    font-weight: 600;
-    margin-bottom: 6px;
-  }
-  .detail-header .layer-badge {
-    display: inline-block;
-    padding: 2px 10px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 500;
-    color: #fff;
-    margin-right: 8px;
-  }
-  .detail-header .file-path {
-    font-size: 13px;
-    color: var(--text-muted);
-    font-family: 'SF Mono', 'Fira Code', monospace;
-  }
-  .detail-why {
-    margin: 16px 0;
-    padding: 12px 16px;
-    background: var(--sidebar-bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    font-size: 14px;
-    line-height: 1.6;
-    color: var(--text-muted);
-  }
-  .detail-why strong {
-    color: var(--text);
-    display: block;
-    margin-bottom: 4px;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .stats-row {
-    display: flex;
-    gap: 16px;
-    margin-bottom: 24px;
-  }
-  .stat-card {
-    flex: 1;
-    padding: 14px 16px;
-    background: var(--sidebar-bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    text-align: center;
-  }
-  .stat-card .stat-value {
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--accent);
-  }
-  .stat-card .stat-label {
-    font-size: 11px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-top: 2px;
-  }
-  .graph-section {
-    margin-bottom: 28px;
-  }
-  .graph-section h3 {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .graph-section h3 .count {
-    font-size: 11px;
-    color: var(--text-dim);
-    font-weight: 400;
-  }
-  .svg-container {
-    background: var(--sidebar-bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px;
-    overflow-x: auto;
-    min-height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .svg-container:empty::after,
-  .svg-container .empty-msg {
-    color: var(--text-dim);
-    font-size: 13px;
-  }
-  .svg-container svg text {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  .subsystem-info { flex: 1; min-width: 0; }
+  .subsystem-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .subsystem-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; line-height: 1.4; }
+  .subsystem-count {
+    font-size: 11px; color: var(--text-dim); background: var(--bg);
+    padding: 2px 8px; border-radius: 10px; flex-shrink: 0;
   }
 
   /* Resize handle */
   .resize-handle {
-    width: 4px;
-    cursor: col-resize;
-    background: transparent;
-    flex-shrink: 0;
+    width: 4px; cursor: col-resize; background: transparent; flex-shrink: 0;
   }
   .resize-handle:hover { background: var(--accent); }
+
+  /* Right content */
+  .content { flex: 1; overflow-y: auto; padding: 24px 32px; }
+  .content-empty {
+    display: flex; align-items: center; justify-content: center;
+    height: 100%; color: var(--text-dim); font-size: 14px;
+  }
+
+  /* Subsystem overview */
+  .subsystem-overview { margin-bottom: 28px; }
+  .subsystem-overview h2 {
+    font-size: 20px; font-weight: 600; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .subsystem-overview h2 .ov-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+  }
+  .subsystem-overview .ov-desc {
+    font-size: 14px; color: var(--text-muted); line-height: 1.6; max-width: 640px;
+  }
+
+  /* Module cards */
+  .module-cards {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px; margin-bottom: 28px;
+  }
+  .module-card {
+    background: var(--sidebar-bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px; cursor: pointer;
+    transition: border-color 0.15s, transform 0.1s;
+  }
+  .module-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .module-card.selected { border-color: var(--accent); background: var(--selected); }
+  .module-card .card-name { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .module-card .card-why { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+  .module-card .card-deps {
+    margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);
+    font-size: 11px; color: var(--text-dim);
+  }
+  .module-card .card-deps .dep-tag { color: var(--accent); }
+
+  /* Module detail */
+  .module-detail {
+    background: var(--sidebar-bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 20px; margin-bottom: 28px;
+    display: none;
+  }
+  .module-detail.visible { display: block; }
+  .module-detail h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .module-detail .md-why {
+    font-size: 13px; color: var(--text-muted); line-height: 1.6;
+    margin-bottom: 16px; padding: 10px 14px; background: var(--bg); border-radius: 8px;
+  }
+  .module-detail .md-why strong { color: var(--text); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px; }
+  .dep-section { margin-bottom: 16px; }
+  .dep-section h4 { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .dep-list { display: flex; flex-direction: column; gap: 6px; }
+  .dep-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 12px; background: var(--bg); border-radius: 6px; font-size: 12px;
+  }
+  .dep-arrow { color: var(--accent); font-weight: 600; flex-shrink: 0; margin-top: 1px; }
+  .dep-target { font-weight: 600; color: var(--text); flex-shrink: 0; cursor: pointer; }
+  .dep-target:hover { text-decoration: underline; }
+  .dep-reason { color: var(--text-muted); }
+
+  /* Subsystem dependency graph */
+  .subsystem-graph {
+    background: var(--sidebar-bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 20px;
+  }
+  .subsystem-graph h3 { font-size: 14px; font-weight: 600; margin-bottom: 16px; }
+  .graph-canvas {
+    background: var(--bg); border-radius: 8px; padding: 20px;
+    overflow-x: auto; display: flex; justify-content: center;
+  }
+  .graph-canvas svg text {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  }
 
   /* Scrollbar */
   ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -314,17 +177,15 @@
   <span class="subtitle">DIAGRAM_TITLE</span>
   <div class="spacer"></div>
   <div class="search-box">
-    <input type="text" id="searchInput" placeholder="Search modules\u2026" />
+    <input type="text" id="searchInput" placeholder="搜索模块..." />
   </div>
-  <button class="btn" id="btnExpand">Expand All</button>
-  <button class="btn" id="btnCollapse">Collapse All</button>
 </div>
 
 <div class="main">
-  <div class="tree-panel" id="treePanel"></div>
+  <div class="sidebar" id="sidebar"></div>
   <div class="resize-handle" id="resizeHandle"></div>
-  <div class="detail-panel" id="detailPanel">
-    <div class="detail-empty">Select a module from the tree to view its dependency analysis</div>
+  <div class="content" id="content">
+    <div class="content-empty">从左侧选择子系统查看架构分析</div>
   </div>
 </div>
 
@@ -333,289 +194,346 @@
   'use strict';
 
   // ── Graph data (replaced at build time) ──
-  const GRAPH_DATA = /* GRAPH_DATA_PLACEHOLDER */ {nodes:[],edges:[]};
-
-  // ── Layer config ──
-  const LAYERS = [
-    { id: 'access',   name: 'Access Layer',  color: '#1f6feb' },
-    { id: 'business', name: 'Business Layer', color: '#f0883e' },
-    { id: 'tool',     name: 'Tool Layer',     color: '#a371f7' },
-    { id: 'data',     name: 'Data Layer',     color: '#3fb950' },
-    { id: 'infra',    name: 'Infra Layer',    color: '#8b949e' },
-  ];
-  const layerMap = {};
-  LAYERS.forEach(l => layerMap[l.id] = l);
+  const GRAPH_DATA = /* GRAPH_DATA_PLACEHOLDER */ {subsystems:[],nodes:[],edges:[]};
 
   // ── Build indexes ──
   const nodeMap = {};
-  GRAPH_DATA.nodes.forEach(n => nodeMap[n.id] = n);
-  const downstream = {}; // id -> [ids it depends on]
-  const upstream = {};   // id -> [ids that depend on it]
-  const edgeReasonMap = {}; // "source->target" -> reason
-  GRAPH_DATA.nodes.forEach(n => { downstream[n.id] = []; upstream[n.id] = []; });
+  const subsystemMap = {};
+  const subsystemNodes = {}; // subsystemId -> [nodeIds]
+  const downstream = {};
+  const upstream = {};
+  const edgeReasonMap = {};
+
+  GRAPH_DATA.nodes.forEach(n => {
+    nodeMap[n.id] = n;
+    if (!subsystemNodes[n.subsystem]) subsystemNodes[n.subsystem] = [];
+    subsystemNodes[n.subsystem].push(n.id);
+    downstream[n.id] = [];
+    upstream[n.id] = [];
+  });
+  GRAPH_DATA.subsystems.forEach(s => subsystemMap[s.id] = s);
   GRAPH_DATA.edges.forEach(e => {
     if (downstream[e.source]) downstream[e.source].push(e.target);
     if (upstream[e.target]) upstream[e.target].push(e.source);
     if (e.reason) edgeReasonMap[e.source + '->' + e.target] = e.reason;
   });
 
-  // ── Recursive chain collection ──
-  function collectChain(startId, direction, maxDepth) {
-    const visited = new Set();
-    const result = [];
-    function dfs(id, depth) {
-      if (depth > maxDepth || visited.has(id)) return;
-      visited.add(id);
-      const neighbors = direction === 'down' ? downstream[id] : upstream[id];
-      neighbors.forEach(nid => {
-        if (nodeMap[nid]) {
-          const reasonKey = id + '->' + nid;
-          const reason = edgeReasonMap[reasonKey] || '';
-          result.push({ from: id, to: nid, depth: depth, reason: reason });
-          dfs(nid, depth + 1);
-        }
-      });
-    }
-    dfs(startId, 1);
-    return result;
+  // ── Compute subsystem-level edges ──
+  function getSubsystemEdges() {
+    const se = {}; // "a->b" -> { reasons: Set, count: n }
+    GRAPH_DATA.edges.forEach(e => {
+      const ns = nodeMap[e.source];
+      const nt = nodeMap[e.target];
+      if (!ns || !nt || ns.subsystem === nt.subsystem) return;
+      const key = ns.subsystem + '->' + nt.subsystem;
+      if (!se[key]) se[key] = { source: ns.subsystem, target: nt.subsystem, reasons: new Set(), count: 0 };
+      se[key].count++;
+      if (e.reason) se[key].reasons.add(e.reason);
+    });
+    return Object.values(se);
   }
 
-  // ── SVG mini-graph renderer ──
-  function renderMiniGraph(chain, rootNodeId, direction) {
-    if (chain.length === 0) return null;
+  // ── Collect dependencies for a module ──
+  function getModuleDeps(id) {
+    const up = upstream[id].map(nid => ({
+      id: nid, reason: edgeReasonMap[nid + '->' + id] || ''
+    }));
+    const down = downstream[id].map(nid => ({
+      id: nid, reason: edgeReasonMap[id + '->' + nid] || ''
+    }));
+    return { up, down };
+  }
 
-    // Collect unique nodes in chain
-    const nodeIds = new Set([rootNodeId]);
-    chain.forEach(c => { nodeIds.add(c.from); nodeIds.add(c.to); });
-
-    // Build layers via BFS from root
-    const layers = {};
-    const queue = [[rootNodeId, 0]];
-    const visited = new Set([rootNodeId]);
-    while (queue.length) {
-      const [id, dist] = queue.shift();
-      layers[id] = dist;
-      const neighbors = direction === 'down' ? downstream[id] : upstream[id];
-      neighbors.forEach(nid => {
-        if (nodeIds.has(nid) && !visited.has(nid)) {
-          visited.add(nid);
-          queue.push([nid, dist + 1]);
-        }
-      });
-    }
-
-    // Group by layer
-    const layerGroups = {};
-    nodeIds.forEach(id => {
-      const d = layers[id] || 0;
-      if (!layerGroups[d]) layerGroups[d] = [];
-      layerGroups[d].push(id);
+  // ── Collect subsystem-level deps for a module ──
+  function getModuleSubsystemDeps(id) {
+    const n = nodeMap[id];
+    if (!n) return { up: [], down: [] };
+    const upSubs = new Set();
+    const downSubs = new Set();
+    upstream[id].forEach(nid => {
+      const nn = nodeMap[nid];
+      if (nn && nn.subsystem !== n.subsystem) upSubs.add(nn.subsystem);
     });
-
-    const layerKeys = Object.keys(layerGroups).map(Number).sort((a, b) => a - b);
-    const colWidth = 140;
-    const rowHeight = 36;
-    const padX = 20;
-    const padY = 20;
-    const maxColHeight = Math.max(...layerKeys.map(k => layerGroups[k].length));
-    const svgW = layerKeys.length * colWidth + padX * 2;
-    const svgH = maxColHeight * rowHeight + padY * 2;
-
-    // Position each node
-    const positions = {};
-    layerKeys.forEach((layerIdx, ci) => {
-      const group = layerGroups[layerIdx];
-      const totalH = group.length * rowHeight;
-      const startY = (svgH - totalH) / 2;
-      group.forEach((id, ri) => {
-        positions[id] = {
-          x: padX + ci * colWidth + colWidth / 2,
-          y: startY + ri * rowHeight + rowHeight / 2
-        };
-      });
+    downstream[id].forEach(nid => {
+      const nn = nodeMap[nid];
+      if (nn && nn.subsystem !== n.subsystem) downSubs.add(nn.subsystem);
     });
-
-    let svg = `<svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}" xmlns="http://www.w3.org/2000/svg">`;
-
-    // Draw edges
-    chain.forEach(c => {
-      const from = positions[c.from];
-      const to = positions[c.to];
-      if (!from || !to) return;
-      const arrowDir = direction === 'down' ? 1 : -1;
-      const x1 = from.x + arrowDir * 42;
-      const x2 = to.x - arrowDir * 42;
-      svg += `<line x1="${x1}" y1="${from.y}" x2="${x2}" y2="${to.y}" stroke="#30363d" stroke-width="1.5" marker-end="url(#arrow-${direction})"/>`;
-      if (c.reason) {
-        const mx = (x1 + x2) / 2;
-        const my = (from.y + to.y) / 2 - 4;
-        const label = c.reason.length > 28 ? c.reason.substring(0, 27) + '\u2026' : c.reason;
-        svg += `<text x="${mx}" y="${my}" text-anchor="middle" fill="#8b949e" font-size="8">${escHtml(label)}</text>`;
-      }
-    });
-
-    // Arrow marker
-    svg += `<defs><marker id="arrow-${direction}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">`;
-    svg += `<path d="M 0 0 L 10 5 L 0 10 z" fill="#30363d"/></marker></defs>`;
-
-    // Draw nodes
-    nodeIds.forEach(id => {
-      const n = nodeMap[id];
-      if (!n || !positions[id]) return;
-      const { x, y } = positions[id];
-      const color = layerMap[n.layer] ? layerMap[n.layer].color : '#8b949e';
-      const isRoot = id === rootNodeId;
-      const strokeColor = isRoot ? '#58a6ff' : color;
-      const strokeWidth = isRoot ? 2 : 1;
-      svg += `<rect x="${x - 42}" y="${y - 13}" width="84" height="26" rx="5" fill="${isRoot ? '#1c2333' : '#161b22'}" stroke="${strokeColor}" stroke-width="${strokeWidth}"/>`;
-      const label = n.label.length > 10 ? n.label.substring(0, 9) + '\u2026' : n.label;
-      svg += `<text x="${x}" y="${y + 4}" text-anchor="middle" fill="#e6edf3" font-size="11" font-weight="${isRoot ? '600' : '400'}">${escHtml(label)}</text>`;
-    });
-
-    svg += '</svg>';
-    return svg;
+    return {
+      up: [...upSubs].map(sid => subsystemMap[sid]).filter(Boolean),
+      down: [...downSubs].map(sid => subsystemMap[sid]).filter(Boolean)
+    };
   }
 
   function escHtml(s) {
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  // ── Build tree ──
-  const treeEl = document.getElementById('treePanel');
-  const detailEl = document.getElementById('detailPanel');
-  let selectedId = null;
+  // ── Sidebar ──
+  const sidebarEl = document.getElementById('sidebar');
+  const contentEl = document.getElementById('content');
+  let activeSubsystemId = null;
+  let activeModuleId = null;
 
-  function buildTree() {
-    treeEl.innerHTML = '';
-    LAYERS.forEach(layer => {
-      const items = GRAPH_DATA.nodes.filter(n => n.layer === layer.id);
-      if (items.length === 0) return;
-
-      const group = document.createElement('div');
-      group.className = 'layer-group';
-
-      const header = document.createElement('div');
-      header.className = 'layer-header';
-      header.innerHTML = `<span class="arrow">\u25BC</span><span class="layer-dot" style="background:${layer.color}"></span>${escHtml(layer.name)}<span class="layer-count">${items.length}</span>`;
-      header.addEventListener('click', () => {
-        header.classList.toggle('collapsed');
-      });
-
-      const list = document.createElement('div');
-      list.className = 'layer-items';
-      items.forEach(n => {
-        const item = document.createElement('div');
-        item.className = 'tree-item';
-        item.dataset.id = n.id;
-        item.innerHTML = `<span class="item-label">${escHtml(n.label)}</span><span class="item-path">${escHtml(n.path)}</span>`;
-        item.addEventListener('click', () => selectNode(n.id));
-        list.appendChild(item);
-      });
-
-      group.appendChild(header);
-      group.appendChild(list);
-      treeEl.appendChild(group);
+  function buildSidebar() {
+    sidebarEl.innerHTML = '';
+    GRAPH_DATA.subsystems.forEach(s => {
+      const count = (subsystemNodes[s.id] || []).length;
+      const div = document.createElement('div');
+      div.className = 'subsystem';
+      div.innerHTML = `
+        <div class="subsystem-header" data-id="${escHtml(s.id)}">
+          <div class="subsystem-icon" style="background:${s.color}22;color:${s.color}">${escHtml(s.icon)}</div>
+          <div class="subsystem-info">
+            <div class="subsystem-name">${escHtml(s.name)}</div>
+            <div class="subsystem-desc">${escHtml(s.desc)}</div>
+          </div>
+          <div class="subsystem-count">${count}</div>
+        </div>
+      `;
+      div.querySelector('.subsystem-header').addEventListener('click', () => selectSubsystem(s.id));
+      sidebarEl.appendChild(div);
     });
   }
 
-  // ── Select node ──
-  function selectNode(id) {
-    selectedId = id;
-    // Update tree selection
-    document.querySelectorAll('.tree-item').forEach(el => {
-      el.classList.toggle('selected', el.dataset.id === id);
+  // ── Select subsystem ──
+  function selectSubsystem(id) {
+    activeSubsystemId = id;
+    activeModuleId = null;
+    // Update sidebar active state
+    document.querySelectorAll('.subsystem-header').forEach(el => {
+      el.classList.toggle('active', el.dataset.id === id);
     });
-    // Render detail
-    const n = nodeMap[id];
-    if (!n) return;
-    const layer = layerMap[n.layer] || { name: n.layer, color: '#8b949e' };
-    const upChain = collectChain(id, 'up', 10);
-    const downChain = collectChain(id, 'down', 10);
-    const upCount = new Set(upChain.map(c => c.to)).size;
-    const downCount = new Set(downChain.map(c => c.to)).size;
-    const maxDepth = Math.max(
-      upChain.length ? Math.max(...upChain.map(c => c.depth)) : 0,
-      downChain.length ? Math.max(...downChain.map(c => c.depth)) : 0
-    );
+    renderSubsystemContent(id);
+  }
+
+  // ── Render subsystem content ──
+  function renderSubsystemContent(subsystemId) {
+    const s = subsystemMap[subsystemId];
+    if (!s) return;
+    const moduleIds = subsystemNodes[subsystemId] || [];
 
     let html = '';
-    html += `<div class="detail-header">`;
-    html += `<h2>${escHtml(n.label)}</h2>`;
-    html += `<span class="layer-badge" style="background:${layer.color}">${escHtml(layer.name)}</span>`;
-    html += `<span class="file-path">${escHtml(n.path)}</span>`;
+
+    // Overview
+    html += `<div class="subsystem-overview">`;
+    html += `<h2><span class="ov-icon" style="background:${s.color}22;color:${s.color}">${escHtml(s.icon)}</span> ${escHtml(s.name)}</h2>`;
+    html += `<div class="ov-desc">${escHtml(s.desc)}</div>`;
     html += `</div>`;
 
-    if (n.why) {
-      html += `<div class="detail-why"><strong>WHY</strong>${escHtml(n.why)}</div>`;
+    // Module cards
+    html += `<div class="module-cards">`;
+    moduleIds.forEach(mid => {
+      const n = nodeMap[mid];
+      if (!n) return;
+      const subsDeps = getModuleSubsystemDeps(mid);
+      const depTags = [];
+      subsDeps.up.forEach(s2 => depTags.push('← ' + s2.name));
+      subsDeps.down.forEach(s2 => depTags.push('→ ' + s2.name));
+
+      html += `<div class="module-card" data-id="${escHtml(mid)}">`;
+      html += `<div class="card-name">${escHtml(n.name)}</div>`;
+      html += `<div class="card-why">${escHtml(n.why)}</div>`;
+      if (depTags.length > 0) {
+        html += `<div class="card-deps">${depTags.map(t => '<span class="dep-tag">' + escHtml(t) + '</span>').join(' &nbsp;')}</div>`;
+      }
+      html += `</div>`;
+    });
+    html += `</div>`;
+
+    // Module detail placeholder
+    html += `<div class="module-detail" id="moduleDetail"></div>`;
+
+    // Subsystem dependency graph
+    const subEdges = getSubsystemEdges().filter(e => e.source === subsystemId || e.target === subsystemId);
+    if (subEdges.length > 0) {
+      html += renderSubsystemGraph(subsystemId, subEdges);
     }
 
-    html += `<div class="stats-row">`;
-    html += `<div class="stat-card"><div class="stat-value">${upCount}</div><div class="stat-label">Upstream (dependents)</div></div>`;
-    html += `<div class="stat-card"><div class="stat-value">${downCount}</div><div class="stat-label">Downstream (dependencies)</div></div>`;
-    html += `<div class="stat-card"><div class="stat-value">${maxDepth}</div><div class="stat-label">Max Depth</div></div>`;
-    html += `</div>`;
+    contentEl.innerHTML = html;
 
-    // Upstream graph
-    const upSvg = renderMiniGraph(upChain, id, 'up');
-    html += `<div class="graph-section"><h3>Upstream Dependencies <span class="count">\u2014 who depends on ${escHtml(n.label)}</span></h3>`;
-    html += `<div class="svg-container">${upSvg || '<span class="empty-msg">No upstream dependencies</span>'}</div></div>`;
+    // Bind card clicks
+    contentEl.querySelectorAll('.module-card').forEach(card => {
+      card.addEventListener('click', () => selectModule(card.dataset.id));
+    });
+  }
 
-    // Downstream graph
-    const downSvg = renderMiniGraph(downChain, id, 'down');
-    html += `<div class="graph-section"><h3>Downstream Dependencies <span class="count">\u2014 what ${escHtml(n.label)} depends on</span></h3>`;
-    html += `<div class="svg-container">${downSvg || '<span class="empty-msg">No downstream dependencies</span>'}</div></div>`;
+  // ── Select module ──
+  function selectModule(id) {
+    activeModuleId = id;
+    const n = nodeMap[id];
+    if (!n) return;
+
+    // Highlight card
+    contentEl.querySelectorAll('.module-card').forEach(card => {
+      card.classList.toggle('selected', card.dataset.id === id);
+    });
+
+    const detailEl = document.getElementById('moduleDetail');
+    if (!detailEl) return;
+
+    const deps = getModuleDeps(id);
+    const subsDeps = getModuleSubsystemDeps(id);
+
+    let html = '';
+    html += `<h3>${escHtml(n.name)}</h3>`;
+    html += `<div class="md-why"><strong>WHY</strong>${escHtml(n.why)}</div>`;
+
+    // Upstream deps (who depends on this)
+    if (deps.up.length > 0) {
+      html += `<div class="dep-section"><h4>上游依赖 — 谁依赖 ${escHtml(n.name)}</h4><div class="dep-list">`;
+      deps.up.forEach(d => {
+        const tn = nodeMap[d.id];
+        const tName = tn ? tn.name : d.id;
+        html += `<div class="dep-item"><span class="dep-arrow">←</span><span class="dep-target" data-id="${escHtml(d.id)}">${escHtml(tName)}</span><span class="dep-reason">${escHtml(d.reason)}</span></div>`;
+      });
+      html += `</div></div>`;
+    }
+
+    // Downstream deps (what this depends on)
+    if (deps.down.length > 0) {
+      html += `<div class="dep-section"><h4>下游依赖 — ${escHtml(n.name)} 依赖什么</h4><div class="dep-list">`;
+      deps.down.forEach(d => {
+        const tn = nodeMap[d.id];
+        const tName = tn ? tn.name : d.id;
+        html += `<div class="dep-item"><span class="dep-arrow">→</span><span class="dep-target" data-id="${escHtml(d.id)}">${escHtml(tName)}</span><span class="dep-reason">${escHtml(d.reason)}</span></div>`;
+      });
+      html += `</div></div>`;
+    }
+
+    if (deps.up.length === 0 && deps.down.length === 0) {
+      html += `<div style="color:var(--text-dim);font-size:13px;">无直接依赖关系</div>`;
+    }
 
     detailEl.innerHTML = html;
+    detailEl.classList.add('visible');
+    detailEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    // Bind dep target clicks
+    detailEl.querySelectorAll('.dep-target').forEach(el => {
+      el.addEventListener('click', () => {
+        const targetId = el.dataset.id;
+        const targetNode = nodeMap[targetId];
+        if (targetNode && targetNode.subsystem !== activeSubsystemId) {
+          selectSubsystem(targetNode.subsystem);
+          setTimeout(() => selectModule(targetId), 100);
+        } else {
+          selectModule(targetId);
+        }
+      });
+    });
+  }
+
+  // ── Render subsystem dependency graph ──
+  function renderSubsystemGraph(centerId, edges) {
+    // Collect all involved subsystems
+    const involved = new Set([centerId]);
+    edges.forEach(e => { involved.add(e.source); involved.add(e.target); });
+    const subs = [...involved].map(id => subsystemMap[id]).filter(Boolean);
+
+    // Layout: center at top, others below
+    const nodeW = 140;
+    const nodeH = 44;
+    const padX = 30;
+    const padY = 30;
+    const cols = Math.min(subs.length, 4);
+    const rows = Math.ceil(subs.length / cols);
+    const svgW = cols * (nodeW + padX) + padX;
+    const svgH = rows * (nodeH + padY) + padY + 40;
+
+    const positions = {};
+    subs.forEach((s, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      positions[s.id] = {
+        x: padX + col * (nodeW + padX) + nodeW / 2,
+        y: (s.id === centerId ? 20 : 80) + row * (nodeH + padY) + nodeH / 2
+      };
+    });
+
+    let svg = `<svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}" xmlns="http://www.w3.org/2000/svg">`;
+    svg += `<defs><marker id="sg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">`;
+    svg += `<path d="M 0 0 L 10 5 L 0 10 z" fill="#30363d"/></marker></defs>`;
+
+    // Edges
+    edges.forEach(e => {
+      const from = positions[e.source];
+      const to = positions[e.target];
+      if (!from || !to) return;
+      const dx = to.x - from.x;
+      const dy = to.y - from.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist === 0) return;
+      const nx = dx / dist;
+      const ny = dy / dist;
+      const x1 = from.x + nx * (nodeW / 2 + 4);
+      const y1 = from.y + ny * (nodeH / 2 + 4);
+      const x2 = to.x - nx * (nodeW / 2 + 4);
+      const y2 = to.y - ny * (nodeH / 2 + 4);
+      svg += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#30363d" stroke-width="1.5" marker-end="url(#sg-arrow)"/>`;
+      // Reason label
+      const reasons = [...e.reasons];
+      if (reasons.length > 0) {
+        const label = reasons[0].length > 30 ? reasons[0].substring(0, 29) + '…' : reasons[0];
+        const mx = (x1 + x2) / 2;
+        const my = (y1 + y2) / 2 - 6;
+        svg += `<text x="${mx}" y="${my}" text-anchor="middle" fill="#8b949e" font-size="9">${escHtml(label)}</text>`;
+      }
+    });
+
+    // Nodes
+    subs.forEach(s => {
+      const pos = positions[s.id];
+      if (!pos) return;
+      const isCenter = s.id === centerId;
+      const strokeColor = isCenter ? '#58a6ff' : s.color;
+      const strokeWidth = isCenter ? 2 : 1.5;
+      svg += `<rect x="${pos.x - nodeW/2}" y="${pos.y - nodeH/2}" width="${nodeW}" height="${nodeH}" rx="8" fill="${isCenter ? '#1c2333' : '#161b22'}" stroke="${strokeColor}" stroke-width="${strokeWidth}"/>`;
+      svg += `<text x="${pos.x}" y="${pos.y + 1}" text-anchor="middle" fill="#e6edf3" font-size="12" font-weight="${isCenter ? '600' : '400'}">${escHtml(s.icon + ' ' + s.name)}</text>`;
+    });
+
+    svg += '</svg>';
+
+    return `<div class="subsystem-graph"><h3>子系统关系</h3><div class="graph-canvas">${svg}</div></div>`;
   }
 
   // ── Search ──
   const searchInput = document.getElementById('searchInput');
   searchInput.addEventListener('input', () => {
     const q = searchInput.value.toLowerCase().trim();
-    document.querySelectorAll('.tree-item').forEach(el => {
-      const id = el.dataset.id;
-      const n = nodeMap[id];
-      if (!q) { el.classList.remove('hidden'); return; }
-      const match = n && (
-        n.label.toLowerCase().includes(q) ||
-        n.path.toLowerCase().includes(q) ||
-        (n.why && n.why.toLowerCase().includes(q)) ||
-        n.id.toLowerCase().includes(q)
-      );
-      el.classList.toggle('hidden', !match);
+    if (!q) {
+      // Reset sidebar
+      document.querySelectorAll('.subsystem').forEach(el => el.style.display = '');
+      return;
+    }
+    // Show/hide subsystems based on module name match
+    GRAPH_DATA.subsystems.forEach(s => {
+      const moduleIds = subsystemNodes[s.id] || [];
+      const hasMatch = moduleIds.some(mid => {
+        const n = nodeMap[mid];
+        return n && (
+          n.name.toLowerCase().includes(q) ||
+          n.why.toLowerCase().includes(q) ||
+          mid.toLowerCase().includes(q)
+        );
+      });
+      const el = sidebarEl.querySelector(`.subsystem-header[data-id="${s.id}"]`);
+      if (el) el.closest('.subsystem').style.display = hasMatch ? '' : 'none';
     });
-    // Show/hide layer groups with no visible items
-    document.querySelectorAll('.layer-group').forEach(group => {
-      const visibleItems = group.querySelectorAll('.tree-item:not(.hidden)');
-      group.style.display = visibleItems.length === 0 ? 'none' : '';
-    });
-  });
-
-  // ── Expand / Collapse all ──
-  document.getElementById('btnExpand').addEventListener('click', () => {
-    document.querySelectorAll('.layer-header').forEach(h => h.classList.remove('collapsed'));
-  });
-  document.getElementById('btnCollapse').addEventListener('click', () => {
-    document.querySelectorAll('.layer-header').forEach(h => h.classList.add('collapsed'));
   });
 
   // ── Resize handle ──
   const resizeHandle = document.getElementById('resizeHandle');
-  const treePanel = document.getElementById('treePanel');
   let resizing = false;
-  resizeHandle.addEventListener('mousedown', (e) => {
-    resizing = true;
-    e.preventDefault();
-  });
+  resizeHandle.addEventListener('mousedown', (e) => { resizing = true; e.preventDefault(); });
   document.addEventListener('mousemove', (e) => {
     if (!resizing) return;
-    const newWidth = Math.max(250, Math.min(600, e.clientX));
-    treePanel.style.width = newWidth + 'px';
+    const newWidth = Math.max(220, Math.min(500, e.clientX));
+    sidebarEl.style.width = newWidth + 'px';
   });
   document.addEventListener('mouseup', () => { resizing = false; });
 
   // ── Init ──
-  buildTree();
+  buildSidebar();
 
 })();
 </script>

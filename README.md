@@ -7,7 +7,7 @@
 ## Features
 
 - **3 个核心问题** — 不是生成一堆图，而是回答"做了什么、怎么跑的、有什么不同"
-- **交互式架构浏览器** — 分层折叠树、依赖链迷你图、搜索、展开/收起
+- **交互式架构浏览器** — 子系统分组、模块卡片、依赖关系图、搜索
 - **结构化报告** — 一份 README 说清楚项目全貌
 - **自动清理** — 重新分析时自动删除旧文件
 - **自包含** — HTML 文件 ~20KB，无外部依赖，离线可用
@@ -51,7 +51,7 @@ flowchart TD
 
 1. **Input** — Provide a local path or GitHub URL
 2. **Quick Scan** — Read README, config files, directory structure
-3. **Q1: What does it do?** — Map modules, classify layers, annotate WHY
+3. **Q1: What does it do?** — Map modules, group into subsystems, annotate WHY
 4. **Q2: How does it work?** — Trace the main workflow end-to-end
 5. **Q3: What's innovative?** — Identify key design decisions
 6. **Output** — One report + one interactive HTML
@@ -67,15 +67,16 @@ docs/analysis/<project-name>/
 ### Report (README.md)
 
 三个部分：
-- **What It Does** — 项目概览、核心功能、模块表（层 + WHY）
+- **What It Does** — 项目概览、核心功能、子系统分组表
 - **How It Works** — 主流程 Mermaid 图 + 逐步解释
 - **What's Innovative** — 3-5 个关键设计决策 + 为什么这样做
 
 ### Explorer (architecture-explorer.html)
 
-- 左侧：按层折叠的模块树
-- 右侧：点击模块 → 递归展示上下游依赖链（SVG 迷你图）
-- 搜索、展开/收起
+- 左侧：子系统列表（图标 + 中文名 + 一句话描述）
+- 右侧：子系统下的模块卡片（中文名 + WHY）+ 子系统关系图
+- 点击模块：展示上下游依赖详情（带 reason）
+- 搜索模块
 
 ## Supported Languages
 

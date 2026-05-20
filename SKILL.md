@@ -74,8 +74,14 @@ Answer three questions about the project. Process them in order — each builds 
    - `data` — storage (repositories, stores, caches)
    - `infra` — cross-cutting (config, logging, events, workers)
 6. Map cross-module dependencies: `Grep` for import patterns between modules
+7. **Group modules into subsystems (8-12 groups):**
+   - Group by functional domain, NOT by layer
+   - Each subsystem: `id` (snake_case), `name` (Chinese/display name), `icon` (emoji), `color` (hex), `desc` (one sentence), `modules` (list of module ids)
+   - Subsystem name must be human-readable (e.g. "对抗引擎", not "adversarial_engine")
+   - Module `name` field must be Chinese/display name (e.g. "对抗评估器", not "adversarial")
+   - Aim for 8-12 subsystems total; avoid groups with only 1 module
 
-**Output:** Module list with layer classification, WHY annotations, and dependency graph data.
+**Output:** Module list with layer classification, WHY annotations, dependency graph data, and subsystem groupings.
 
 **Layer detection rules:**
 - Module exports route handlers / CLI commands → `access`
@@ -150,7 +156,7 @@ Read `templates/report-template.md` for the structure. The report has three sect
 2. **How it works** — main workflow Mermaid diagram, step-by-step explanation
 3. **What's innovative** — key design decisions with rationale
 
-Plus a Mermaid architecture overview diagram showing modules grouped by layer.
+Plus a Mermaid architecture overview diagram showing modules grouped by subsystem (not layer).
 
 ### Explorer: `docs/analysis/<project-name>/architecture-explorer.html`
 
@@ -167,8 +173,11 @@ Interactive HTML for drilling into module details and dependencies.
 **Graph data format:**
 ```javascript
 {
+  subsystems: [
+    { id: 'adversarial_engine', name: '对抗引擎', icon: '⚔️', color: '#1f6feb', desc: '一句话描述', modules: ['adversarial', 'review_verdict'] }
+  ],
   nodes: [
-    { id: 'module_name', label: 'display_name', layer: 'business', path: 'src/module/', why: 'WHY annotation' }
+    { id: 'module_id', name: '模块中文名', subsystem: 'adversarial_engine', layer: 'business', why: 'WHY annotation' }
   ],
   edges: [
     { source: 'caller', target: 'callee', reason: 'edge WHY annotation' }
@@ -176,12 +185,19 @@ Interactive HTML for drilling into module details and dependencies.
 }
 ```
 
-**Layer values:** `access`, `business`, `tool`, `data`, `infra`
+**Key rules:**
+- `subsystems[].name` — human-readable name (Chinese or English, matching report language)
+- `nodes[].name` — human-readable module name (NOT code-level identifier)
+- `nodes[].subsystem` — must match a `subsystems[].id`
+- `nodes[].why` — one sentence explaining WHY this module exists
+- `edges[].reason` — one sentence explaining WHY this dependency exists
+- Layer values: `access`, `business`, `tool`, `data`, `infra` (for internal classification only)
 
 **Completeness check before generating HTML:**
-- Every layer must have at least one node (if the project has that layer)
+- Every subsystem must have at least one module
 - Every edge must have a reason
-- Every node must have a path and why
+- Every node must have `name`, `subsystem`, and `why`
+- Every node's `subsystem` must reference a valid subsystem id
 - If a layer is empty but should exist, re-scan for missed modules
 
 ### Cleanup

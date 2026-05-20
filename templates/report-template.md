@@ -16,33 +16,25 @@
 
 ### Core Modules
 
-> Open [architecture-explorer.html](architecture-explorer.html) to explore interactively — click modules to see full dependency chains.
+> Open [architecture-explorer.html](architecture-explorer.html) to explore interactively — click subsystems and modules to see dependencies.
 
-| Module | Layer | WHY |
-|--------|-------|-----|
-| <module> | <layer> | <why it exists> |
+| Subsystem | Modules | WHY |
+|-----------|---------|-----|
+| <subsystem_name> | <module1>, <module2>, ... | <subsystem description> |
 | ... | ... | ... |
 
 ### Architecture Overview
 
 ```mermaid
 graph TB
-    subgraph Access["接入层"]
+    subgraph S1["<subsystem_name>"]
         <modules>
     end
-    subgraph Business["业务层"]
+    subgraph S2["<subsystem_name>"]
         <modules>
     end
-    subgraph Tool["工具层"]
-        <modules>
-    end
-    subgraph Data["数据层"]
-        <modules>
-    end
-    subgraph Infra["基础设施层"]
-        <modules>
-    end
-    <dependency edges>
+    ...
+    <dependency edges between subsystems>
 ```
 
 ## How It Works
