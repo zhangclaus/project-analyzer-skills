@@ -64,38 +64,35 @@ Answer three questions about the project. Process them in order — each builds 
 
 **Steps:**
 1. `Read` README, docs, and main entry files to understand the problem domain
-2. **Position the project — answer "what IS it?":**
+2. **Position the project — answer "what IS it?" and "how is it used?":**
    - What category? (library, CLI tool, framework, service, SDK, plugin, platform...)
    - What form factor? (npm package, Docker image, SaaS, standalone binary, Python package...)
    - How does a user interact with it? (API, CLI, GUI, SDK import, MCP protocol...)
    - What does it replace? (e.g. "replaces traditional RAG pipeline", "alternative to X")
    - Is there a built-in demo/example app? (e.g. VikingBot is an example app, not the core)
+   - **Integration model**: active call (user invokes directly) or passive trigger (hooks/plugins/middleware/lifecycle callbacks)?
+     - `Grep` for hook registrations, plugin mounts, event listeners, middleware chains
+     - For passive trigger: list ALL trigger points with their timing and purpose
    - Write a one-line positioning statement: "<Name> is a <category> that <what it does> for <who>"
 3. `Grep` for exported functions/classes/APIs to identify core capabilities
 4. `Glob` source directories to map module boundaries
-5. For each major module: `Read` its entry file, `Grep` its exports, infer WHY it exists
-6. Classify each module into a layer:
-   - `access` — entry points (CLI, API routes, UI, MCP server)
-   - `business` — core logic (services, controllers, engines)
-   - `tool` — utilities (adapters, formatters, validators)
-   - `data` — storage (repositories, stores, caches)
-   - `infra` — cross-cutting (config, logging, events, workers)
-7. Map cross-module dependencies: `Grep` for import patterns between modules
-8. **Group modules into subsystems (8-12 groups):**
+5. For each major module: `Read` its entry file, `Grep` its exports, infer WHY it exists. Tag each module with a layer (`access`/`business`/`tool`/`data`/`infra`) as you go.
+6. Map cross-module dependencies: `Grep` for import patterns between modules
+7. **Group modules into subsystems (8-12 groups):**
    - Group by functional domain, NOT by layer
    - Each subsystem: `id` (snake_case), `name` (Chinese/display name), `icon` (emoji), `color` (hex), `desc` (one sentence), `modules` (list of module ids)
    - Subsystem name must be human-readable (e.g. "对抗引擎", not "adversarial_engine")
    - Module `name` field must be Chinese/display name (e.g. "对抗评估器", not "adversarial")
    - Aim for 8-12 subsystems total; avoid groups with only 1 module
-9. **Extract 3-5 core concepts (domain model):**
+8. **Extract 3-5 core concepts (domain model):**
    - Identify the key abstractions the project revolves around (e.g. Crew, Worker, Turn, Challenge)
    - For each concept: `name` (Chinese/display name), `what` (one sentence: what is it), `why` (one sentence: why does it exist)
    - These are the concepts someone must understand BEFORE reading code
    - Look for: main data structures, key classes, central protocol/message types
 
-**Output:** Module list with layer classification, WHY annotations, dependency graph data, subsystem groupings, and core concepts.
+**Output:** Module list with subsystem groupings, WHY annotations, dependency graph data, core concepts, and integration model.
 
-**Layer detection rules:**
+**Layer detection rules (tag during step 5):**
 - Module exports route handlers / CLI commands → `access`
 - Module has business logic but no framework imports → `business`
 - Module provides pure functions or type definitions → `tool`
@@ -108,22 +105,17 @@ Answer three questions about the project. Process them in order — each builds 
 **Goal:** Trace the main workflow end-to-end.
 
 **Steps:**
-1. **Identify the integration model:**
-   - **Active call**: User invokes the tool directly (CLI command, API call, function import). Entry point = the most common command/endpoint.
-   - **Passive trigger**: Tool runs in response to host events (hooks, plugins, middleware, lifecycle callbacks). Entry points = a set of trigger points.
-   - `Grep` for hook registrations, plugin mounts, event listeners, lifecycle callbacks, middleware chains
-   - For passive trigger projects: list ALL trigger points with their timing and purpose
-2. **Trace the workflow:**
+1. **Trace the workflow** (use integration model from Q1 to determine approach):
    - For active call: trace from the primary entry point through the call chain
    - For passive trigger: trace EACH trigger's flow, and show the lifecycle sequence (when triggers fire relative to each other)
    - `Read` each function's implementation, follow calls to other modules
    - Continue until the workflow completes (returns result, writes output, etc.)
-3. At each step, note:
+2. At each step, note:
    - What happens (function name + brief action)
    - Which module it's in
    - Any branching (if/else, error handling)
    - Any side effects (DB write, API call, file I/O)
-4. Identify the "critical path" — the happy path that most executions follow
+3. Identify the "critical path" — the happy path that most executions follow
 
 **Output:**
 - For active call: Linear flow diagram with branching points (Mermaid flowchart)
@@ -172,8 +164,8 @@ Generate a single report + one interactive HTML file. All text content (report, 
 
 Read `templates/report-template.md` for the structure. The report has three sections matching the three questions:
 
-1. **What it does** — project overview, core features, module table with layer/WHY
-2. **How it works** — main workflow Mermaid diagram, step-by-step explanation
+1. **What it does** — positioning statement, project overview, subsystem table, core concepts
+2. **How it works** — integration model, main workflow Mermaid diagram, step-by-step explanation
 3. **What's innovative** — key design decisions with rationale
 
 Plus a Mermaid architecture overview diagram showing modules grouped by subsystem (not layer).
