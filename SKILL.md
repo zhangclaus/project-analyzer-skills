@@ -64,23 +64,30 @@ Answer three questions about the project. Process them in order — each builds 
 
 **Steps:**
 1. `Read` README, docs, and main entry files to understand the problem domain
-2. `Grep` for exported functions/classes/APIs to identify core capabilities
-3. `Glob` source directories to map module boundaries
-4. For each major module: `Read` its entry file, `Grep` its exports, infer WHY it exists
-5. Classify each module into a layer:
+2. **Position the project — answer "what IS it?":**
+   - What category? (library, CLI tool, framework, service, SDK, plugin, platform...)
+   - What form factor? (npm package, Docker image, SaaS, standalone binary, Python package...)
+   - How does a user interact with it? (API, CLI, GUI, SDK import, MCP protocol...)
+   - What does it replace? (e.g. "replaces traditional RAG pipeline", "alternative to X")
+   - Is there a built-in demo/example app? (e.g. VikingBot is an example app, not the core)
+   - Write a one-line positioning statement: "<Name> is a <category> that <what it does> for <who>"
+3. `Grep` for exported functions/classes/APIs to identify core capabilities
+4. `Glob` source directories to map module boundaries
+5. For each major module: `Read` its entry file, `Grep` its exports, infer WHY it exists
+6. Classify each module into a layer:
    - `access` — entry points (CLI, API routes, UI, MCP server)
    - `business` — core logic (services, controllers, engines)
    - `tool` — utilities (adapters, formatters, validators)
    - `data` — storage (repositories, stores, caches)
    - `infra` — cross-cutting (config, logging, events, workers)
-6. Map cross-module dependencies: `Grep` for import patterns between modules
-7. **Group modules into subsystems (8-12 groups):**
+7. Map cross-module dependencies: `Grep` for import patterns between modules
+8. **Group modules into subsystems (8-12 groups):**
    - Group by functional domain, NOT by layer
    - Each subsystem: `id` (snake_case), `name` (Chinese/display name), `icon` (emoji), `color` (hex), `desc` (one sentence), `modules` (list of module ids)
    - Subsystem name must be human-readable (e.g. "对抗引擎", not "adversarial_engine")
    - Module `name` field must be Chinese/display name (e.g. "对抗评估器", not "adversarial")
    - Aim for 8-12 subsystems total; avoid groups with only 1 module
-8. **Extract 3-5 core concepts (domain model):**
+9. **Extract 3-5 core concepts (domain model):**
    - Identify the key abstractions the project revolves around (e.g. Crew, Worker, Turn, Challenge)
    - For each concept: `name` (Chinese/display name), `what` (one sentence: what is it), `why` (one sentence: why does it exist)
    - These are the concepts someone must understand BEFORE reading code

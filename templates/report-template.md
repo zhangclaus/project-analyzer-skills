@@ -4,6 +4,8 @@
 
 ## What It Does
 
+<One-line positioning statement: "<Name> is a <category> that <what it does> for <who>". E.g. "OpenViking is a context management service that unifies memory, resources, and skills into a virtual file system for AI Agents.">
+
 <1-2 paragraph summary: what problem does this project solve? who is it for? what are the core capabilities?>
 
 | | |
