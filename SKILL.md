@@ -33,7 +33,9 @@ metadata:
 4. `Read` 主入口文件了解项目类型
 5. `Glob` 统计源文件数量
 
-展示摘要，询问报告语言（中文/English，默认匹配项目主语言）。
+展示摘要，询问:
+1. **报告语言**: 中文/English（默认匹配项目主语言）
+2. **是否生成交互式 HTML**: 是/否（默认是）。不需要 HTML 时只生成 README.md 报告。
 
 ## Analysis
 
@@ -101,7 +103,7 @@ metadata:
 
 ## Output
 
-生成一个报告 + 一个交互式 HTML 文件。所有文本内容使用 Quick Scan 选定的语言。
+生成 README.md 报告（必选）。如果用户选择生成 HTML，额外生成交互式架构浏览器。所有文本内容使用 Quick Scan 选定的语言。
 
 **报告和 HTML 生成细节见:** `templates/output-reference.md`
 
