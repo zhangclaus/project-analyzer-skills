@@ -22,241 +22,84 @@ metadata:
 
 ## Input Handling
 
-The user provides either a local path or a GitHub URL.
-
-**Local path:**
-1. Use `Glob` to verify the directory exists and contains code files
-2. If path doesn't exist, ask the user to check it
-
-**GitHub URL:**
-1. Extract owner/repo from the URL
-2. Use `Bash` with `gh repo view <owner/repo>` to verify accessibility
-3. Use `Bash` with `gh repo clone <owner/repo> /tmp/project-analyzer-skills-<repo>` to clone
-4. If inaccessible, ask the user to check the URL or network
+**Local path:** `Glob` 验证目录存在 → 不存在则提示用户。
+**GitHub URL:** `gh repo view` 验证 → `gh repo clone` 到 `/tmp/project-analyzer-skills-<repo>`。
 
 ## Quick Scan
 
-Before analysis, scan the project:
+1. `Glob` 获取目录结构（前2-3层）
+2. `Read` 配置文件检测技术栈（package.json, Cargo.toml, go.mod 等）
+3. `Read` README 获取项目描述
+4. `Read` 主入口文件了解项目类型
+5. `Glob` 统计源文件数量
 
-1. `Glob` for `**/*` to get directory structure (top 2-3 levels)
-2. `Read` config files to detect tech stack: `package.json`, `Cargo.toml`, `go.mod`, `pyproject.toml`, `pom.xml`
-3. `Read` README for project description
-4. `Read` main entry files to understand the project type
-5. `Glob` for source files to count approximate size
-
-Present summary to user: project name, description, tech stack, size, top-level structure.
-
-Then ask:
-
-**Language:** Report language?
-- **中文** — 报告用中文写
-- **English** — Report in English
-
-Default: match the project's primary language (if README is in Chinese → 中文, otherwise → English). Proceed to analysis after selection.
+展示摘要，询问报告语言（中文/English，默认匹配项目主语言）。
 
 ## Analysis
 
-Answer three questions about the project. Process them in order — each builds on the previous.
+三个问题按顺序处理，每个建立在前一个之上。
 
-### Question 1: What does it do?
+### Q1: What does it do?
 
-**Goal:** Understand the project's purpose and core capabilities.
+1. `Read` README/文档/入口文件理解问题域
+2. **项目定位** — 回答"它是什么？怎么用？":
+   - 类别（library/CLI/framework/service/SDK/plugin/platform）
+   - 形态（npm包/Docker镜像/SaaS/二进制）
+   - 交互方式（API/CLI/GUI/SDK import/MCP protocol）
+   - **集成模型**: active call（用户直接调用）vs passive trigger（hooks/plugins/middleware）
+     - `Grep` 搜索 hook 注册、plugin 挂载、事件监听、middleware 链
+     - passive trigger: 列出所有触发点及其时机和作用
+   - 写一行定位语句: "<Name> is a <category> that <what it does> for <who>"
+3. `Grep` 导出的函数/类/API → 核心能力
+4. `Glob` 源码目录 → 模块边界
+5. 对每个主要模块: `Read` 入口文件, `Grep` 导出, 推断 WHY。标记 layer（`access`/`business`/`tool`/`data`/`infra`）
+6. `Grep` import 模式 → 跨模块依赖
+7. **模块分组为子系统（8-12组）:**
+   - 按功能域分组，不是按 layer
+   - 每个子系统: `id`(snake_case), `name`(中文/显示名), `icon`(emoji), `color`(hex), `desc`(一句话), `modules`
+   - 名称必须可读（如"对抗引擎"，不是"adversarial_engine"）
+8. **提取每个子系统的内部流程和关键细节:**
+   - `Read` 子系统核心模块代码理解其流程
+   - `flow`: 有序步骤列表，每步 `name`(中文), `module`, `desc`(一句话)
+   - `key_details`: 学习者必须知道的重要事实（阈值、算法、默认值等）
+   - **关键: 所有细节必须来自实际代码，不可捏造**
+9. **提取3-5个核心概念（领域模型）:**
+   - 项目围绕的关键抽象（如 Crew, Worker, Turn）
+   - 每个: `name`(中文), `what`(一句话), `why`(一句话)
 
-**Steps:**
-1. `Read` README, docs, and main entry files to understand the problem domain
-2. **Position the project — answer "what IS it?" and "how is it used?":**
-   - What category? (library, CLI tool, framework, service, SDK, plugin, platform...)
-   - What form factor? (npm package, Docker image, SaaS, standalone binary, Python package...)
-   - How does a user interact with it? (API, CLI, GUI, SDK import, MCP protocol...)
-   - What does it replace? (e.g. "replaces traditional RAG pipeline", "alternative to X")
-   - Is there a built-in demo/example app? (e.g. VikingBot is an example app, not the core)
-   - **Integration model**: active call (user invokes directly) or passive trigger (hooks/plugins/middleware/lifecycle callbacks)?
-     - `Grep` for hook registrations, plugin mounts, event listeners, middleware chains
-     - For passive trigger: list ALL trigger points with their timing and purpose
-   - Write a one-line positioning statement: "<Name> is a <category> that <what it does> for <who>"
-3. `Grep` for exported functions/classes/APIs to identify core capabilities
-4. `Glob` source directories to map module boundaries
-5. For each major module: `Read` its entry file, `Grep` its exports, infer WHY it exists. Tag each module with a layer (`access`/`business`/`tool`/`data`/`infra`) as you go.
-6. Map cross-module dependencies: `Grep` for import patterns between modules
-7. **Group modules into subsystems (8-12 groups):**
-   - Group by functional domain, NOT by layer
-   - Each subsystem: `id` (snake_case), `name` (Chinese/display name), `icon` (emoji), `color` (hex), `desc` (one sentence), `modules` (list of module ids)
-   - Subsystem name must be human-readable (e.g. "对抗引擎", not "adversarial_engine")
-   - Module `name` field must be Chinese/display name (e.g. "对抗评估器", not "adversarial")
-   - Aim for 8-12 subsystems total; avoid groups with only 1 module
-8. **For each subsystem, extract its internal flow and key details:**
-   - `Read` the subsystem's core module code to understand its process
-   - `flow`: ordered list of steps the subsystem executes (e.g. "意图分析 → 向量搜索 → 重排序 → 收敛检查")
-   - Each step: `name` (Chinese/display), `module` (which module handles it), `desc` (what happens, one sentence)
-   - `key_details`: important facts a learner must know — search sources, thresholds, algorithms, defaults, platform-specific behavior
-   - **CRITICAL: ALL details must come from reading the actual code.** Do NOT guess or infer. If you can't find a specific number/threshold in the code, omit it rather than fabricate.
-   - Look for: function bodies, config constants, default parameters, conditional branches, loop logic
-9. **Extract 3-5 core concepts (domain model):**
-   - Identify the key abstractions the project revolves around (e.g. Crew, Worker, Turn, Challenge)
-   - For each concept: `name` (Chinese/display name), `what` (one sentence: what is it), `why` (one sentence: why does it exist)
-   - These are the concepts someone must understand BEFORE reading code
-   - Look for: main data structures, key classes, central protocol/message types
+**Layer 规则:**
+- 导出路由/CLI命令 → `access`
+- 有业务逻辑但无框架导入 → `business`
+- 纯函数/类型定义 → `tool`
+- 导入ORM/数据库做CRUD → `data`
+- 配置/日志/事件/进程管理 → `infra`
 
-**Output:** Module list with subsystem groupings, WHY annotations, dependency graph data, core concepts, and integration model.
+### Q2: How does it work?
 
-**Layer detection rules (tag during step 5):**
-- Module exports route handlers / CLI commands → `access`
-- Module has business logic but no framework imports → `business`
-- Module provides pure functions or type definitions → `tool`
-- Module imports ORM / database / file system for CRUD → `data`
-- Module handles config, logging, events, process management → `infra`
-- When ambiguous → `business`
+1. **追踪工作流**（用 Q1 的集成模型决定方式）:
+   - active call: 从主入口追踪调用链
+   - passive trigger: 追踪每个 trigger 的流程 + 生命周期时序
+2. 记录每步: 发生了什么、在哪个模块、分支、副作用
+3. 识别关键路径（happy path）
 
-### Question 2: How does it work?
+**找主流:** 最显眼的CLI命令/API端点 / README主用例 / 被引用最多的函数 / hook注册文件。
 
-**Goal:** Trace the main workflow end-to-end.
+### Q3: What's innovative?
 
-**Steps:**
-1. **Trace the workflow** (use integration model from Q1 to determine approach):
-   - For active call: trace from the primary entry point through the call chain
-   - For passive trigger: trace EACH trigger's flow, and show the lifecycle sequence (when triggers fire relative to each other)
-   - `Read` each function's implementation, follow calls to other modules
-   - Continue until the workflow completes (returns result, writes output, etc.)
-2. At each step, note:
-   - What happens (function name + brief action)
-   - Which module it's in
-   - Any branching (if/else, error handling)
-   - Any side effects (DB write, API call, file I/O)
-3. Identify the "critical path" — the happy path that most executions follow
+1. 识别架构模式（单体/微服务/事件驱动/插件系统）
+2. 找非常规设计决策: `Grep` 搜索 Mixin/decorator/metaclass 等模式
+3. 与同领域常见模式对比
+4. 检查技术选型: 并发模型、状态管理、扩展机制
+5. `Read` 设计文档/ADR（如存在）
 
-**Output:**
-- For active call: Linear flow diagram with branching points (Mermaid flowchart)
-- For passive trigger: Lifecycle diagram showing all triggers, their timing, and what each does (Mermaid flowchart or table)
-
-**How to find THE main flow:**
-- Look for the most prominent CLI command or API endpoint
-- Check README for the primary use case
-- Find the function with the most incoming references
-- For hook/plugin projects: find the hook registration file, trace each hook's handler
-- If unclear, ask the user which flow they care about
-
-### Question 3: What's innovative?
-
-**Goal:** Identify what makes this project's design different from typical approaches.
-
-**Steps:**
-1. Identify the project's architectural pattern (monolith, microservices, event-driven, plugin system, etc.)
-2. Look for unusual design decisions:
-   - `Grep` for patterns like `class.*Mixin`, `@decorator`, `metaclass`, `__init_subclass__`
-   - Check for custom protocols, message formats, or serialization
-   - Look for non-standard dependency injection or service discovery
-3. Compare with common patterns in the same domain:
-   - If it's a web framework: how does routing work differently?
-   - If it's a CLI tool: how does it handle config/plugins?
-   - If it's a library: what's the API design philosophy?
-4. Check for interesting technical choices:
-   - Concurrency model (async, threads, processes, actors)
-   - State management (immutable, event sourcing, CRDT)
-   - Extension mechanism (plugins, hooks, middleware)
-5. Read design docs or ADRs if they exist (`docs/`, `adr/`, `decisions/`)
-
-**Output:** 3-5 key innovations with explanations of WHY they matter.
-
-**Quality rules:**
-- Don't list features — explain design decisions
-- Good: "用事件溯源替代状态快照，支持任意时间点回放"
-- Bad: "支持事件溯源"
-- Each innovation should answer: "为什么这样做？好在哪？"
+**输出:** 3-5个创新点，每个解释 WHY 和好处，不要只列功能。
 
 ## Output
 
-Generate a single report + one interactive HTML file. All text content (report, WHY annotations, layer names) uses the language selected during Quick Scan.
+生成一个报告 + 一个交互式 HTML 文件。所有文本内容使用 Quick Scan 选定的语言。
 
-### Report: `docs/analysis/<project-name>/README.md`
+**报告和 HTML 生成细节见:** `templates/output-reference.md`
 
-Read `templates/report-template.md` for the structure. The report has three sections matching the three questions:
+Before writing output, delete existing files: `rm -rf docs/analysis/<project-name>/*`
 
-1. **What it does** — positioning statement, project overview, subsystem table, core concepts
-2. **How it works** — integration model, main workflow Mermaid diagram, step-by-step explanation
-3. **What's innovative** — key design decisions with rationale
-
-Plus a Mermaid architecture overview diagram showing modules grouped by subsystem (not layer).
-
-### Explorer: `docs/analysis/<project-name>/architecture-explorer.html`
-
-Interactive HTML for drilling into module details and dependencies.
-
-**HTML generation process:**
-1. Read the template: `Read templates/architecture-explorer.html`
-2. Collect graph data during Question 1 analysis
-3. Replace `PROJECT_TITLE` with the project name (two occurrences: `<title>` and toolbar `<h1>`)
-4. Replace `DIAGRAM_TITLE` with the diagram title (one occurrence: `<title>`)
-5. Replace `/* GRAPH_DATA_PLACEHOLDER */` with the JSON graph data
-6. Write the HTML file to `docs/analysis/<project-name>/architecture-explorer.html`
-
-**Graph data format:**
-```javascript
-{
-  subsystems: [
-    {
-      id: 'semantic_retrieval', name: '语义检索', icon: '🔍', color: '#a371f7',
-      desc: '目录递归检索 + 重排序',
-      modules: ['retriever', 'intent_analyzer', 'rerank_client'],
-      flow: [
-        { step: 1, name: '意图分析', module: 'intent_analyzer', desc: '将查询拆解为类型过滤、关键词、范围等检索条件' },
-        { step: 2, name: '向量搜索', module: 'hierarchical_retriever', desc: '搜 3 个源：user/memories + agent/memories + agent/skills，每源 topk=10' }
-      ],
-      key_details: [
-        '搜索 3 个源：viking://user/memories, viking://agent/memories, viking://agent/skills',
-        '目录递归最多 3 轮，topk 不再变化时收敛',
-        '分数传播：子目录得分 × 1.2 向上聚合',
-        '去重阈值：相似度 > 0.92 的结果合并'
-      ]
-    }
-  ],
-  nodes: [
-    { id: 'module_id', name: '模块中文名', subsystem: 'adversarial_engine', layer: 'business', why: 'WHY annotation' }
-  ],
-  edges: [
-    { source: 'caller', target: 'callee', reason: 'edge WHY annotation' }
-  ]
-}
-```
-
-**Key rules:**
-- `subsystems[].name` — human-readable name (Chinese or English, matching report language)
-- `nodes[].name` — human-readable module name (NOT code-level identifier)
-- `nodes[].subsystem` — must match a `subsystems[].id`
-- `nodes[].why` — one sentence explaining WHY this module exists
-- `edges[].reason` — one sentence explaining WHY this dependency exists
-- Layer values: `access`, `business`, `tool`, `data`, `infra` (for internal classification only)
-
-**Completeness check before generating HTML:**
-- Every subsystem must have at least one module
-- Every edge must have a reason
-- Every node must have `name`, `subsystem`, and `why`
-- Every node's `subsystem` must reference a valid subsystem id
-- Every subsystem should have a `flow` (at least 2 steps) if the subsystem has a clear process
-- Every `flow` step must have `name`, `module`, and `desc`
-- `key_details` must be factual — every detail must be traceable to a specific code location
-- If a layer is empty but should exist, re-scan for missed modules
-
-### Cleanup
-
-Before writing output, delete any existing files in the output directory from previous analyses:
-```
-rm -rf docs/analysis/<project-name>/*
-```
-
-## Error Handling
-
-| Scenario | Action |
-|---|---|
-| Path doesn't exist | "That path doesn't exist. Please check and try again." |
-| GitHub repo inaccessible | "Cannot access that repository. Check the URL or your network." |
-| Project too large (>1000 files) | "This project has many files. Want to focus on a specific module?" |
-| Unknown language | "I don't recognize this language/framework. Results may be less accurate." |
-| Can't identify main flow | Ask the user which flow they want analyzed |
-
-## Review Loop
-
-After generating the report:
-1. Show the user the README.md overview
-2. Tell the user to open architecture-explorer.html to explore interactively
-3. Ask: "Does this capture the key points? Want to adjust anything?"
-4. If changes requested, update and regenerate
+After generating: 展示报告摘要，让用户打开 HTML 交互探索，询问是否需要调整。
