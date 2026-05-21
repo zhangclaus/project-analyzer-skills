@@ -4,7 +4,7 @@
 
 Read `templates/report-template.md` for the structure. Three sections:
 1. **What it does** — positioning statement, project overview, subsystem table, core concepts
-2. **How it works** — integration model, main workflow Mermaid diagram, step-by-step explanation
+2. **How it works** — integration model, core flow(s) Mermaid diagram, step-by-step explanation
 3. **What's innovative** — key design decisions with rationale
 
 Plus a Mermaid architecture overview diagram showing modules grouped by subsystem (not layer).

@@ -63,9 +63,9 @@ graph TB
 | <hook_name> | <timing> | <action> |
 | ... | ... | ... |
 
-**For active call projects:** Skip this table, go directly to Main Flow.
+**For active call projects:** Skip this table, go directly to Core Flows.
 
-### Main Flow: <flow name>
+### Core Flow 1: <flow name>
 
 ```mermaid
 flowchart TD
@@ -75,6 +75,8 @@ flowchart TD
 ```
 
 <For each significant step, briefly explain what happens and why>
+
+<If the project has multiple independent flows, repeat the section:>### Core Flow 2: <flow name>
 
 ### Key Subsystem Flows
 
